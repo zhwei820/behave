@@ -989,6 +989,7 @@ class Runner(ModelRunner):
         # -- STEP: Run all features.
         stream_openers = self.config.outputs
         self.formatters = make_formatters(self.config, stream_openers)
+        
         return self.run_model()
 
 
