@@ -69,8 +69,14 @@ DEFAULT_RUNNER_CLASS_NAME = "behave.runner:Runner"
 # -----------------------------------------------------------------------------
 class LogLevel(object):
     names = [
-        "NOTSET", "CRITICAL", "FATAL", "ERROR",
-        "WARNING", "WARN", "INFO", "DEBUG",
+        "NOTSET",
+        "CRITICAL",
+        "FATAL",
+        "ERROR",
+        "WARNING",
+        "WARN",
+        "INFO",
+        "DEBUG",
     ]
 
     @staticmethod
@@ -88,8 +94,7 @@ class LogLevel(object):
     def parse_type(cls, levelname):
         level = cls.parse(levelname, Unknown)
         if level is Unknown:
-            message = "%s is unknown, use: %s" % \
-                      (levelname, ", ".join(cls.names[1:]))
+            message = "%s is unknown, use: %s" % (levelname, ", ".join(cls.names[1:]))
             raise argparse.ArgumentTypeError(message)
         return level
 
@@ -117,168 +122,290 @@ COLOR_OFF_VALUES = ("off", "never")
 
 
 OPTIONS = [
-    (("-C", "--no-color"),
-     dict(dest="color", action="store_const", const=COLOR_DEFAULT_OFF,
-          help="Disable colored mode.")),
-
-    (("--color",),
-     dict(dest="color", choices=COLOR_CHOICES,
-          default=COLOR_DEFAULT, const=COLOR_DEFAULT, nargs="?",
-          help="""Use colored mode or not (default: %(default)s).""")),
-
-    (("-d", "--dry-run"),
-     dict(action="store_true",
-          help="Invokes formatters without executing the steps.")),
-
-    (("-D", "--define"),
-     dict(dest="userdata_defines", type=parse_user_define, action="append",
-          metavar="NAME=VALUE",
-          help="""Define user-specific data for the config.userdata dictionary.
-                  Example: -D foo=bar to store it in config.userdata["foo"].""")),
-
-    (("-e", "--exclude"),
-     dict(metavar="PATTERN", dest="exclude_re",
-          help="""Don't run feature files matching regular expression
-                  PATTERN.""")),
-
-    (("-i", "--include"),
-     dict(metavar="PATTERN", dest="include_re",
-          help="Only run feature files matching regular expression PATTERN.")),
-
-    (("--no-junit",),
-     dict(action="store_false", dest="junit",
-          help="Don't output JUnit-compatible reports.")),
-
-    (("--junit",),
-     dict(action="store_true",
-          help="""Output JUnit-compatible reports.
+    (
+        ("-C", "--no-color"),
+        dict(
+            dest="color",
+            action="store_const",
+            const=COLOR_DEFAULT_OFF,
+            help="Disable colored mode.",
+        ),
+    ),
+    (
+        ("--color",),
+        dict(
+            dest="color",
+            choices=COLOR_CHOICES,
+            default=COLOR_DEFAULT,
+            const=COLOR_DEFAULT,
+            nargs="?",
+            help="""Use colored mode or not (default: %(default)s).""",
+        ),
+    ),
+    (
+        ("-d", "--dry-run"),
+        dict(
+            action="store_true", help="Invokes formatters without executing the steps."
+        ),
+    ),
+    (
+        ("-D", "--define"),
+        dict(
+            dest="userdata_defines",
+            type=parse_user_define,
+            action="append",
+            metavar="NAME=VALUE",
+            help="""Define user-specific data for the config.userdata dictionary.
+                  Example: -D foo=bar to store it in config.userdata["foo"].""",
+        ),
+    ),
+    (
+        ("-e", "--exclude"),
+        dict(
+            metavar="PATTERN",
+            dest="exclude_re",
+            help="""Don't run feature files matching regular expression
+                  PATTERN.""",
+        ),
+    ),
+    (
+        ("-i", "--include"),
+        dict(
+            metavar="PATTERN",
+            dest="include_re",
+            help="Only run feature files matching regular expression PATTERN.",
+        ),
+    ),
+    (
+        ("--no-junit",),
+        dict(
+            action="store_false",
+            dest="junit",
+            help="Don't output JUnit-compatible reports.",
+        ),
+    ),
+    (
+        ("--junit",),
+        dict(
+            action="store_true",
+            help="""Output JUnit-compatible reports.
                   When junit is enabled, all stdout and stderr
                   will be redirected and dumped to the junit report,
                   regardless of the "--capture" and "--no-capture" options.
-                  """)),
-
-    (("--junit-directory",),
-     dict(metavar="PATH", dest="junit_directory",
-          default="reports",
-          help="""Directory in which to store JUnit reports.""")),
-
-    (("-j", "--jobs", "--parallel"),
-     dict(metavar="NUMBER", dest="jobs", default=1, type=positive_number,
-          help="""Number of concurrent jobs to use (default: %(default)s).
+                  """,
+        ),
+    ),
+    (
+        ("--junit-directory",),
+        dict(
+            metavar="PATH",
+            dest="junit_directory",
+            default="reports",
+            help="""Directory in which to store JUnit reports.""",
+        ),
+    ),
+    (
+        ("-j", "--jobs", "--parallel"),
+        dict(
+            metavar="NUMBER",
+            dest="jobs",
+            default=1,
+            type=positive_number,
+            help="""Number of concurrent jobs to use (default: %(default)s).
                   Only supported by test runners that support parallel execution.
-                  """)),
-
-    ((),  # -- CONFIGFILE only
-     dict(dest="default_format", default="pretty",
-          help="Specify default formatter (default: %(default)s).")),
-
-
-    (("-f", "--format"),
-     dict(dest="format", action="append",
-          help="""Specify a formatter. If none is specified the default
+                  """,
+        ),
+    ),
+    (
+        (),  # -- CONFIGFILE only
+        dict(
+            dest="default_format",
+            default="pretty",
+            help="Specify default formatter (default: %(default)s).",
+        ),
+    ),
+    (
+        ("-f", "--format"),
+        dict(
+            dest="format",
+            action="append",
+            help="""Specify a formatter. If none is specified the default
                   formatter is used. Pass "--format help" to get a
-                  list of available formatters.""")),
-
-    (("--steps-catalog",),
-     dict(dest="steps_catalog", action="store_true",
-          help="""Show a catalog of all available step definitions.
-                  SAME AS: --format=steps.catalog --dry-run --no-summary -q""")),
-
-    ((),  # -- CONFIGFILE only
-     dict(dest="scenario_outline_annotation_schema",
-          help="""Specify name annotation schema for scenario outline
-                  (default="{name} -- @{row.id} {examples.name}").""")),
-
-    (("--no-skipped",),
-     dict(dest="show_skipped", action="store_false",
-          help="Don't print skipped steps (due to tags).")),
-
-    (("--show-skipped",),
-     dict(action="store_true",
-          help="""Print skipped steps.
+                  list of available formatters.""",
+        ),
+    ),
+    (
+        ("--steps-catalog",),
+        dict(
+            dest="steps_catalog",
+            action="store_true",
+            help="""Show a catalog of all available step definitions.
+                  SAME AS: --format=steps.catalog --dry-run --no-summary -q""",
+        ),
+    ),
+    (
+        (),  # -- CONFIGFILE only
+        dict(
+            dest="scenario_outline_annotation_schema",
+            help="""Specify name annotation schema for scenario outline
+                  (default="{name} -- @{row.id} {examples.name}").""",
+        ),
+    ),
+    (
+        ("--no-skipped",),
+        dict(
+            dest="show_skipped",
+            action="store_false",
+            help="Don't print skipped steps (due to tags).",
+        ),
+    ),
+    (
+        ("--show-skipped",),
+        dict(
+            action="store_true",
+            help="""Print skipped steps.
                   This is the default behaviour. This switch is used to
-                  override a configuration file setting.""")),
-
-    (("--no-snippets",),
-     dict(dest="show_snippets", action="store_false",
-          help="Don't print snippets for unimplemented steps.")),
-    (("--snippets",),
-     dict(dest="show_snippets", action="store_true",
-          help="""Print snippets for unimplemented steps.
+                  override a configuration file setting.""",
+        ),
+    ),
+    (
+        ("--no-snippets",),
+        dict(
+            dest="show_snippets",
+            action="store_false",
+            help="Don't print snippets for unimplemented steps.",
+        ),
+    ),
+    (
+        ("--snippets",),
+        dict(
+            dest="show_snippets",
+            action="store_true",
+            help="""Print snippets for unimplemented steps.
                   This is the default behaviour. This switch is used to
-                  override a configuration file setting.""")),
-
-    (("--no-multiline",),
-     dict(dest="show_multiline", action="store_false",
-          help="""Don't print multiline strings and tables under steps.""")),
-
-    (("--multiline", ),
-     dict(dest="show_multiline", action="store_true",
-          help="""Print multiline strings and tables under steps.
+                  override a configuration file setting.""",
+        ),
+    ),
+    (
+        ("--no-multiline",),
+        dict(
+            dest="show_multiline",
+            action="store_false",
+            help="""Don't print multiline strings and tables under steps.""",
+        ),
+    ),
+    (
+        ("--multiline",),
+        dict(
+            dest="show_multiline",
+            action="store_true",
+            help="""Print multiline strings and tables under steps.
                   This is the default behaviour. This switch is used to
-                  override a configuration file setting.""")),
-
-    (("-n", "--name"),
-     dict(dest="name", action="append", metavar="NAME_PATTERN",
-          help="""Select feature elements (scenarios, ...) to run
+                  override a configuration file setting.""",
+        ),
+    ),
+    (
+        ("-n", "--name"),
+        dict(
+            dest="name",
+            action="append",
+            metavar="NAME_PATTERN",
+            help="""Select feature elements (scenarios, ...) to run
                   which match part of the given name (regex pattern).
                   If this option is given more than once,
-                  it will match against all the given names.""")),
-
-    (("--no-capture",),
-     dict(dest="stdout_capture", action="store_false",
-          help="""Don't capture stdout (any stdout output will be
-                  printed immediately.)""")),
-
-    (("--capture",),
-     dict(dest="stdout_capture", action="store_true",
-          help="""Capture stdout (any stdout output will be
+                  it will match against all the given names.""",
+        ),
+    ),
+    (
+        ("--no-capture",),
+        dict(
+            dest="stdout_capture",
+            action="store_false",
+            help="""Don't capture stdout (any stdout output will be
+                  printed immediately.)""",
+        ),
+    ),
+    (
+        ("--capture",),
+        dict(
+            dest="stdout_capture",
+            action="store_true",
+            help="""Capture stdout (any stdout output will be
                   printed if there is a failure.)
                   This is the default behaviour. This switch is used to
-                  override a configuration file setting.""")),
-
-    (("--no-capture-stderr",),
-     dict(dest="stderr_capture", action="store_false",
-          help="""Don't capture stderr (any stderr output will be
-                  printed immediately.)""")),
-
-    (("--capture-stderr",),
-     dict(dest="stderr_capture", action="store_true",
-          help="""Capture stderr (any stderr output will be
+                  override a configuration file setting.""",
+        ),
+    ),
+    (
+        ("--no-capture-stderr",),
+        dict(
+            dest="stderr_capture",
+            action="store_false",
+            help="""Don't capture stderr (any stderr output will be
+                  printed immediately.)""",
+        ),
+    ),
+    (
+        ("--capture-stderr",),
+        dict(
+            dest="stderr_capture",
+            action="store_true",
+            help="""Capture stderr (any stderr output will be
                   printed if there is a failure.)
                   This is the default behaviour. This switch is used to
-                  override a configuration file setting.""")),
-
-    (("--no-logcapture",),
-     dict(dest="log_capture", action="store_false",
-          help="""Don't capture logging. Logging configuration will
-                  be left intact.""")),
-
-    (("--logcapture",),
-     dict(dest="log_capture", action="store_true",
-          help="""Capture logging. All logging during a step will be captured
+                  override a configuration file setting.""",
+        ),
+    ),
+    (
+        ("--no-logcapture",),
+        dict(
+            dest="log_capture",
+            action="store_false",
+            help="""Don't capture logging. Logging configuration will
+                  be left intact.""",
+        ),
+    ),
+    (
+        ("--logcapture",),
+        dict(
+            dest="log_capture",
+            action="store_true",
+            help="""Capture logging. All logging during a step will be captured
                   and displayed in the event of a failure.
                   This is the default behaviour. This switch is used to
-                  override a configuration file setting.""")),
-
-    (("--logging-level",),
-     dict(type=LogLevel.parse_type, default=logging.INFO,
-          help="""Specify a level to capture logging at. The default
-                  is INFO - capturing everything.""")),
-
-    (("--logging-format",),
-     dict(help="""Specify custom format to print statements. Uses the
+                  override a configuration file setting.""",
+        ),
+    ),
+    (
+        ("--logging-level",),
+        dict(
+            type=LogLevel.parse_type,
+            default=logging.INFO,
+            help="""Specify a level to capture logging at. The default
+                  is INFO - capturing everything.""",
+        ),
+    ),
+    (
+        ("--logging-format",),
+        dict(
+            help="""Specify custom format to print statements. Uses the
                   same format as used by standard logging handlers. The
-                  default is "%%(levelname)s:%%(name)s:%%(message)s".""")),
-
-    (("--logging-datefmt",),
-     dict(help="""Specify custom date/time format to print
+                  default is "%%(levelname)s:%%(name)s:%%(message)s"."""
+        ),
+    ),
+    (
+        ("--logging-datefmt",),
+        dict(
+            help="""Specify custom date/time format to print
                   statements.
                   Uses the same format as used by standard logging
-                  handlers.""")),
-
-    (("--logging-filter",),
-     dict(help="""Specify which statements to filter in/out. By default,
+                  handlers."""
+        ),
+    ),
+    (
+        ("--logging-filter",),
+        dict(
+            help="""Specify which statements to filter in/out. By default,
                   everything is captured. If the output is too verbose, use
                   this option to filter out needless output.
                   Example: --logging-filter=foo will capture statements issued
@@ -287,7 +414,7 @@ OPTIONS = [
                   filter=foo,bar,baz.
                   If any logger name is prefixed with a minus, eg filter=-foo,
                   it will be excluded rather than included.""",
-          config_help="""Specify which statements to filter in/out. By default,
+            config_help="""Specify which statements to filter in/out. By default,
                          everything is captured. If the output is too verbose,
                          use this option to filter out needless output.
                          Example: ``logging_filter = foo`` will capture
@@ -296,152 +423,221 @@ OPTIONS = [
                          loggers with comma: ``logging_filter = foo,bar,baz``.
                          If any logger name is prefixed with a minus, eg
                          ``logging_filter = -foo``, it will be excluded rather
-                         than included.""")),
-
-    (("--logging-clear-handlers",),
-     dict(action="store_true",
-          help="Clear all other logging handlers.")),
-
-    (("--no-summary",),
-     dict(action="store_false", dest="summary",
-          help="""Don't display the summary at the end of the run.""")),
-
-    (("--summary",),
-     dict(action="store_true", dest="summary",
-          help="""Display the summary at the end of the run.""")),
-
-    (("-o", "--outfile"),
-     dict(dest="outfiles", action="append", metavar="FILE",
-          help="Write to specified file instead of stdout.")),
-
-    ((),  # -- CONFIGFILE only
-     dict(dest="paths", action="append",
-          help="Specify default feature paths, used when none are provided.")),
-    ((),  # -- CONFIGFILE only
-     dict(dest="tag_expression_protocol", type=TagExpressionProtocol.parse,
-          choices=TagExpressionProtocol.choices(),
-          default=TagExpressionProtocol.default().name.lower(),
-          help="""\
+                         than included.""",
+        ),
+    ),
+    (
+        ("--logging-clear-handlers",),
+        dict(action="store_true", help="Clear all other logging handlers."),
+    ),
+    (
+        ("--no-summary",),
+        dict(
+            action="store_false",
+            dest="summary",
+            help="""Don't display the summary at the end of the run.""",
+        ),
+    ),
+    (
+        ("--summary",),
+        dict(
+            action="store_true",
+            dest="summary",
+            help="""Display the summary at the end of the run.""",
+        ),
+    ),
+    (
+        ("-o", "--outfile"),
+        dict(
+            dest="outfiles",
+            action="append",
+            metavar="FILE",
+            help="Write to specified file instead of stdout.",
+        ),
+    ),
+    (
+        (),  # -- CONFIGFILE only
+        dict(
+            dest="paths",
+            action="append",
+            help="Specify default feature paths, used when none are provided.",
+        ),
+    ),
+    (
+        (),  # -- CONFIGFILE only
+        dict(
+            dest="tag_expression_protocol",
+            type=TagExpressionProtocol.parse,
+            choices=TagExpressionProtocol.choices(),
+            default=TagExpressionProtocol.default().name.lower(),
+            help="""\
 Specify the tag-expression protocol to use (default: %(default)s).
 With "any", tag-expressions v1 and v2 are supported (in auto-detect mode).
 With "strict", only tag-expressions v2 are supported (better error diagnostics).
-""")),
-
-    (("-q", "--quiet"),
-     dict(action="store_true",
-          help="Alias for --no-snippets --no-source.")),
-
-    (("-r", "--runner"),
-     dict(dest="runner", action="store", metavar="RUNNER_CLASS",
-          default=DEFAULT_RUNNER_CLASS_NAME,
-          help='Use own runner class, like: "behave.runner:Runner"')),
-
-    (("--no-source",),
-     dict( dest="show_source", action="store_false",
-          help="""Don't print the file and line of the step definition with the
-                  steps.""")),
-
-    (("--show-source",),
-     dict(dest="show_source", action="store_true",
-          help="""Print the file and line of the step
+""",
+        ),
+    ),
+    (
+        ("-q", "--quiet"),
+        dict(action="store_true", help="Alias for --no-snippets --no-source."),
+    ),
+    (
+        ("-r", "--runner"),
+        dict(
+            dest="runner",
+            action="store",
+            metavar="RUNNER_CLASS",
+            default=DEFAULT_RUNNER_CLASS_NAME,
+            help='Use own runner class, like: "behave.runner:Runner"',
+        ),
+    ),
+    (
+        ("--no-source",),
+        dict(
+            dest="show_source",
+            action="store_false",
+            help="""Don't print the file and line of the step definition with the
+                  steps.""",
+        ),
+    ),
+    (
+        ("--show-source",),
+        dict(
+            dest="show_source",
+            action="store_true",
+            help="""Print the file and line of the step
                   definition with the steps. This is the default
                   behaviour. This switch is used to override a
-                  configuration file setting.""")),
-
-    (("--stage",),
-     dict(help="""Defines the current test stage.
+                  configuration file setting.""",
+        ),
+    ),
+    (
+        ("--stage",),
+        dict(
+            help="""Defines the current test stage.
                   The test stage name is used as name prefix for the environment
                   file and the steps directory (instead of default path names).
-                  """)),
-
-    (("--stop",),
-     dict(action="store_true",
-          help="Stop running tests at the first failure.")),
-
+                  """
+        ),
+    ),
+    (
+        ("--stop",),
+        dict(action="store_true", help="Stop running tests at the first failure."),
+    ),
+    (
+        ("-s",),
+        dict(action="store_true", help="Stop running tests at the first failure."),
+    ),
+    (
+        ("-k",),
+        dict(action="store_true", help="Stop running tests at the first failure."),
+    ),
     # -- DISABLE-UNUSED-OPTION: Not used anywhere.
     # (("-S", "--strict"),
     # dict(action="store_true",
     #    help="Fail if there are any undefined or pending steps.")),
-
-    ((),  # -- CONFIGFILE only
-     dict(dest="default_tags", metavar="TAG_EXPRESSION", action="append",
-          help="""Define default tags when non are provided.
-                  See --tags for more information.""")),
-
-    (("-t", "--tags"),
-     dict(action="append", metavar="TAG_EXPRESSION",
-          help="""Only execute features or scenarios with tags
+    (
+        (),  # -- CONFIGFILE only
+        dict(
+            dest="default_tags",
+            metavar="TAG_EXPRESSION",
+            action="append",
+            help="""Define default tags when non are provided.
+                  See --tags for more information.""",
+        ),
+    ),
+    (
+        ("-t", "--tags"),
+        dict(
+            action="append",
+            metavar="TAG_EXPRESSION",
+            help="""Only execute features or scenarios with tags
                   matching TAG_EXPRESSION. Pass "--tags-help" for
                   more information.""",
-          config_help="""Only execute certain features or scenarios based
+            config_help="""Only execute certain features or scenarios based
                          on the tag expression given. See below for how to code
-                         tag expressions in configuration files.""")),
-
-    (("-T", "--no-timings"),
-     dict( dest="show_timings", action="store_false",
-          help="""Don't print the time taken for each step.""")),
-
-    (("--show-timings",),
-     dict(dest="show_timings", action="store_true",
-          help="""Print the time taken, in seconds, of each step after the
+                         tag expressions in configuration files.""",
+        ),
+    ),
+    (
+        ("-T", "--no-timings"),
+        dict(
+            dest="show_timings",
+            action="store_false",
+            help="""Don't print the time taken for each step.""",
+        ),
+    ),
+    (
+        ("--show-timings",),
+        dict(
+            dest="show_timings",
+            action="store_true",
+            help="""Print the time taken, in seconds, of each step after the
                   step has completed. This is the default behaviour. This
                   switch is used to override a configuration file
-                  setting.""")),
-
-    (("-v", "--verbose"),
-     dict(action="store_true",
-          help="Show the files and features loaded.")),
-
-    (("-w", "--wip"),
-     dict(action="store_true",
-          help="""Only run scenarios tagged with "wip". Additionally: use the
+                  setting.""",
+        ),
+    ),
+    (
+        ("-v", "--verbose"),
+        dict(action="store_true", help="Show the files and features loaded."),
+    ),
+    (
+        ("-w", "--wip"),
+        dict(
+            action="store_true",
+            help="""Only run scenarios tagged with "wip". Additionally: use the
                   "plain" formatter, do not capture stdout or logging output
-                  and stop at the first failure.""")),
-
-    (("--lang",),
-     dict(metavar="LANG",
-          help="Use keywords for a language other than English.")),
-
-    (("--lang-list",),
-     dict(action="store_true",
-          help="List the languages available for --lang.")),
-
-    (("--lang-help",),
-     dict(metavar="LANG",
-          help="List the translations accepted for one language.")),
-
-    (("--tags-help",),
-     dict(action="store_true",
-          help="Show help for tag expressions.")),
-
-    (("--version",),
-     dict(action="store_true", help="Show version.")),
+                  and stop at the first failure.""",
+        ),
+    ),
+    (
+        ("--lang",),
+        dict(metavar="LANG", help="Use keywords for a language other than English."),
+    ),
+    (
+        ("--lang-list",),
+        dict(action="store_true", help="List the languages available for --lang."),
+    ),
+    (
+        ("--lang-help",),
+        dict(metavar="LANG", help="List the translations accepted for one language."),
+    ),
+    (
+        ("--tags-help",),
+        dict(action="store_true", help="Show help for tag expressions."),
+    ),
+    (("--version",), dict(action="store_true", help="Show version.")),
 ]
 
 
 # -- CONFIG-FILE SKIPS:
 # * Skip SOME_HELP options, like: --tags-help, --lang-list, ...
 # * Skip --no-<name> options (action: "store_false", "store_const")
-CONFIGFILE_EXCLUDED_OPTIONS = set([
-    "tags_help", "lang_list", "lang_help",
-    "version",
-    "userdata_defines",
-])
+CONFIGFILE_EXCLUDED_OPTIONS = set(
+    [
+        "tags_help",
+        "lang_list",
+        "lang_help",
+        "version",
+        "userdata_defines",
+    ]
+)
 CONFIGFILE_EXCLUDED_ACTIONS = set(["store_false", "store_const"])
 
 # -- OPTIONS: With raw value access semantics in configuration file.
-RAW_VALUE_OPTIONS = frozenset([
-    "logging_format",
-    "logging_datefmt",
-    # -- MAYBE: "scenario_outline_annotation_schema",
-])
+RAW_VALUE_OPTIONS = frozenset(
+    [
+        "logging_format",
+        "logging_datefmt",
+        # -- MAYBE: "scenario_outline_annotation_schema",
+    ]
+)
 
 
 def _values_to_str(data):
-    return json.loads(json.dumps(data),
-        parse_float=str,
-        parse_int=str,
-        parse_constant=str
+    return json.loads(
+        json.dumps(data), parse_float=str, parse_int=str, parse_constant=str
     )
 
 
@@ -461,6 +657,7 @@ ConfigFileOption = namedtuple("ConfigFileOption", ("dest", "action", "type"))
 
 def configfile_options_iter(config):
     skip_missing = bool(config)
+
     def config_has_param(config, param_name):
         try:
             return param_name in config["behave"]
@@ -506,8 +703,7 @@ def format_outfiles_coupling(config_data, config_dir):
                 outfiles.append(outfile)
             config_data["outfiles"] = outfiles
         elif len(outfiles) > formatter_size:
-            print("CONFIG-ERROR: Too many outfiles (%d) provided." %
-                  outfiles_size)
+            print("CONFIG-ERROR: Too many outfiles (%d) provided." % outfiles_size)
             config_data["outfiles"] = outfiles[:formatter_size]
 
     for paths_name in ("paths", "outfiles"):
@@ -516,15 +712,14 @@ def format_outfiles_coupling(config_data, config_dir):
             # NOTE: Absolute paths are preserved by os.path.join().
             paths = config_data[paths_name]
             config_data[paths_name] = [
-                os.path.normpath(os.path.join(config_dir, p))
-                for p in paths
+                os.path.normpath(os.path.join(config_dir, p)) for p in paths
             ]
 
 
 def read_configparser(path):
     # pylint: disable=too-many-locals, too-many-branches
     config = ConfigParser()
-    config.optionxform = str    # -- SUPPORT: case-sensitive keys
+    config.optionxform = str  # -- SUPPORT: case-sensitive keys
     config.read(path)
     this_config = {}
 
@@ -558,8 +753,8 @@ def read_configparser(path):
     # SCHEMA: config_section: data_name
     special_config_section_map = {
         "behave.formatters": "more_formatters",
-        "behave.runners":    "more_runners",
-        "behave.userdata":   "userdata",
+        "behave.runners": "more_runners",
+        "behave.userdata": "userdata",
     }
     for section_name, data_name in special_config_section_map.items():
         this_config[data_name] = {}
@@ -604,9 +799,12 @@ def read_toml_config(path):
             #  There is no need to split by newlines or strip values.
             value_type = value_type or six.text_type
             if not isinstance(raw_value, list):
-                message = "%s = %r (expected: list<%s>, was: %s)" % \
-                          (param_name, raw_value, value_type.__name__,
-                           type(raw_value).__name__)
+                message = "%s = %r (expected: list<%s>, was: %s)" % (
+                    param_name,
+                    raw_value,
+                    value_type.__name__,
+                    type(raw_value).__name__,
+                )
                 raise ConfigParamTypeError(message)
             this_config[param_name] = raw_value
         elif action not in CONFIGFILE_EXCLUDED_ACTIONS:
@@ -619,8 +817,8 @@ def read_toml_config(path):
     # SCHEMA: config_section: data_name
     special_config_section_map = {
         "formatters": "more_formatters",
-        "runners":    "more_runners",
-        "userdata":   "userdata",
+        "runners": "more_runners",
+        "userdata": "userdata",
     }
     for section_name, data_name in special_config_section_map.items():
         this_config[data_name] = {}
@@ -666,9 +864,9 @@ def config_filenames():
         paths.append(os.path.join(os.environ["APPDATA"]))
 
     for path in reversed(paths):
-        for filename in reversed((
-            "behave.ini", ".behaverc", "setup.cfg", "tox.ini", "pyproject.toml"
-        )):
+        for filename in reversed(
+            ("behave.ini", ".behaverc", "setup.cfg", "tox.ini", "pyproject.toml")
+        ):
             filename = os.path.join(path, filename)
             if os.path.isfile(filename):
                 yield filename
@@ -699,9 +897,9 @@ EXAMPLES:
   behave @features.txt
 """
     formatter_class = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(usage=usage,
-                                     description=description,
-                                     formatter_class=formatter_class)
+    parser = argparse.ArgumentParser(
+        usage=usage, description=description, formatter_class=formatter_class
+    )
     for fixed, keywords in OPTIONS:
         if not fixed:
             # -- SKIP: CONFIG-FILE ONLY OPTION.
@@ -711,8 +909,9 @@ EXAMPLES:
             keywords = dict(keywords)
             del keywords["config_help"]
         parser.add_argument(*fixed, **keywords)
-    parser.add_argument("paths", nargs="*",
-                        help="Feature directory, file or file-location (FILE:LINE).")
+    parser.add_argument(
+        "paths", nargs="*", help="Feature directory, file or file-location (FILE:LINE)."
+    )
     return parser
 
 
@@ -721,8 +920,9 @@ def setup_config_file_parser():
     # COVERS: config-file.section="behave"
     description = "config-file schema"
     formatter_class = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(description=description,
-                                     formatter_class=formatter_class)
+    parser = argparse.ArgumentParser(
+        description=description, formatter_class=formatter_class
+    )
     for fixed, keywords in configfile_options_iter(None):
         if "config_help" in keywords:
             keywords = dict(keywords)
@@ -732,8 +932,10 @@ def setup_config_file_parser():
         parser.add_argument(*fixed, **keywords)
     return parser
 
+
 class Configuration(object):
     """Configuration object for behave and behave runners."""
+
     # pylint: disable=too-many-instance-attributes
     defaults = dict(
         color=os.getenv("BEHAVE_COLOR", COLOR_DEFAULT),
@@ -756,15 +958,14 @@ class Configuration(object):
         stage=None,
         userdata={},
         # -- SPECIAL:
-        default_format="pretty",    # -- Used when no formatters are configured.
-        default_tags="",            # -- Used when no tags are defined.
+        default_format="pretty",  # -- Used when no formatters are configured.
+        default_tags="",  # -- Used when no tags are defined.
         config_tags=None,
-        scenario_outline_annotation_schema=u"{name} -- @{row.id} {examples.name}"
+        scenario_outline_annotation_schema="{name} -- @{row.id} {examples.name}",
     )
     cmdline_only_options = set("userdata_defines")
 
-    def __init__(self, command_args=None, load_config=True, verbose=None,
-                 **kwargs):
+    def __init__(self, command_args=None, load_config=True, verbose=None, **kwargs):
         """
         Constructs a behave configuration object.
           * loads the configuration defaults (if needed).
@@ -853,9 +1054,7 @@ class Configuration(object):
         self.userdata_defines = None
         self.more_formatters = None
         self.more_runners = None
-        self.runner_aliases = {
-            "default": DEFAULT_RUNNER_CLASS_NAME
-        }
+        self.runner_aliases = {"default": DEFAULT_RUNNER_CLASS_NAME}
 
     @classmethod
     def make_defaults(cls, **kwargs):
@@ -965,8 +1164,10 @@ class Configuration(object):
         """
         # -- SANITY-CHECK FIRST: Is correct type used for "config.format"
         if self.format is not None and not isinstance(self.format, list):
-            parser.error("CONFIG-PARAM-TYPE-ERROR: format = %r (expected: list<%s>, was: %s)" %
-                         (self.format, six.text_type, type(self.format).__name__))
+            parser.error(
+                "CONFIG-PARAM-TYPE-ERROR: format = %r (expected: list<%s>, was: %s)"
+                % (self.format, six.text_type, type(self.format).__name__)
+            )
 
         bad_formats_and_errors = self.select_bad_formats_with_errors()
         if bad_formats_and_errors:
@@ -1083,7 +1284,7 @@ class Configuration(object):
         # flags = (re.UNICODE | re.LOCALE)
         # -- ENSURE: Names are all unicode/text values (for issue #606).
         names = to_texts(names)
-        pattern = u"|".join(names)
+        pattern = "|".join(names)
         return re.compile(pattern, flags=re.UNICODE)
 
     def exclude(self, filename):
@@ -1117,7 +1318,7 @@ class Configuration(object):
         :param kwargs:      Passed to :func:`logging.basicConfig()`
         """
         if level is None:
-            level = self.logging_level      # pylint: disable=no-member
+            level = self.logging_level  # pylint: disable=no-member
         else:
             # pylint: disable=import-outside-toplevel
             level = logging_check_level(level)

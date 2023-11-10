@@ -17,9 +17,13 @@ from behave._types import ExceptionUtil
 from behave.capture import CaptureController
 from behave.exception import ConfigError
 from behave.formatter._registry import make_formatters
-from behave.runner_util import \
-    collect_feature_locations, parse_features, \
-    exec_file, load_step_modules, PathManager
+from behave.runner_util import (
+    collect_feature_locations,
+    parse_features,
+    exec_file,
+    load_step_modules,
+    PathManager,
+)
 from behave.step_registry import registry as the_step_registry
 from enum import Enum
 
@@ -43,6 +47,7 @@ class ContextMaskWarning(UserWarning):
     If the variable was originally set by *behave* then this will be raised if
     user code overwrites the value.
     """
+
     pass
 
 
@@ -52,6 +57,7 @@ class ContextMode(Enum):
     * BEHAVE: Indicates "behave" (internal) mode
     * USER: Indicates "user" mode (in steps, hooks, fixtures, ...)
     """
+
     BEHAVE = 1
     USER = 2
 
@@ -147,6 +153,7 @@ class Context(object):
 
     .. _`configuration file section names`: behave.html#configuration-files
     """
+
     # pylint: disable=too-many-instance-attributes
     LAYER_NAMES = ["testrun", "feature", "rule", "scenario"]
     FAIL_ON_CLEANUP_ERRORS = True
@@ -160,7 +167,7 @@ class Context(object):
             "config": self._config,
             "active_outline": None,
             "cleanup_errors": 0,
-            "@cleanups": [],    # -- REQUIRED-BY: before_all() hook
+            "@cleanups": [],  # -- REQUIRED-BY: before_all() hook
             "@layer": "testrun",
         }
         self._stack = [root_data]
@@ -208,7 +215,6 @@ class Context(object):
         # -- OTHERWISE: Use existing param
         return getattr(self, name, None)
 
-
     def use_or_create_param(self, name, factory_func, *args, **kwargs):
         """Use an existing context parameter (aka: attribute) or
         create a new parameter if it does not exist yet.
@@ -238,8 +244,10 @@ class Context(object):
         cleanup_func_name = getattr(cleanup_func, "__name__", None)
         if not cleanup_func_name:
             cleanup_func_name = "%r" % cleanup_func
-        print(u"CLEANUP-ERROR in %s: %s: %s" %
-              (cleanup_func_name, exception.__class__.__name__, exception))
+        print(
+            "CLEANUP-ERROR in %s: %s: %s"
+            % (cleanup_func_name, exception.__class__.__name__, exception)
+        )
         traceback.print_exc(file=sys.stdout)
         # MAYBE: context._dump(pretty=True, prefix="Context: ")
         # -- MARK: testrun as FAILED
@@ -266,14 +274,13 @@ class Context(object):
         assert self._stack, "REQUIRE: Non-empty stack"
         current_layer = self._stack[0]
         cleanup_funcs = current_layer.get("@cleanups", [])
-        on_cleanup_error = getattr(self, "on_cleanup_error",
-                                   self.print_cleanup_error)
+        on_cleanup_error = getattr(self, "on_cleanup_error", self.print_cleanup_error)
         context = self
         cleanup_errors = []
         for cleanup_func in reversed(cleanup_funcs):
             try:
                 cleanup_func()
-            except Exception as e: # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 # pylint: disable=protected-access
                 context._root["cleanup_errors"] += 1
                 cleanup_errors.append(sys.exc_info())
@@ -314,8 +321,11 @@ class Context(object):
         return use_context_with_mode(self, ContextMode.USER)
 
     def user_mode(self):
-        warnings.warn("Use 'use_with_user_mode()' instead",
-                      PendingDeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "Use 'use_with_user_mode()' instead",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         return self.use_with_user_mode()
 
     def _set_root_attribute(self, attr, value):
@@ -338,16 +348,25 @@ class Context(object):
 
     def _emit_warning(self, attr, params):
         msg = ""
-        if self._mode is ContextMode.BEHAVE and self._origin[attr] is not ContextMode.BEHAVE:
-            msg = "behave runner is masking context attribute '%(attr)s' " \
-                  "originally set in %(function)s (%(filename)s:%(line)s)"
+        if (
+            self._mode is ContextMode.BEHAVE
+            and self._origin[attr] is not ContextMode.BEHAVE
+        ):
+            msg = (
+                "behave runner is masking context attribute '%(attr)s' "
+                "originally set in %(function)s (%(filename)s:%(line)s)"
+            )
         elif self._mode is ContextMode.USER:
             if self._origin[attr] is not ContextMode.USER:
-                msg = "user code is masking context attribute '%(attr)s' " \
-                      "originally set by behave"
+                msg = (
+                    "user code is masking context attribute '%(attr)s' "
+                    "originally set by behave"
+                )
             elif self._config.verbose:
-                msg = "user code is masking context attribute " \
+                msg = (
+                    "user code is masking context attribute "
                     "'%(attr)s'; see the tutorial for what this means"
+                )
         if msg:
             msg = msg % params
             warnings.warn(msg, ContextMaskWarning, stacklevel=3)
@@ -394,7 +413,7 @@ class Context(object):
 
         stack_limit = 2
         if six.PY2:
-            stack_limit += 1     # Due to traceback2 usage.
+            stack_limit += 1  # Due to traceback2 usage.
         stack_frame = traceback.extract_stack(limit=stack_limit)[0]
         self._record[attr] = stack_frame
         frame = self._stack[0]
@@ -449,13 +468,12 @@ class Context(object):
                 passed = step.run(self._runner, quiet=True, capture=False)
                 if not passed:
                     # -- ISSUE #96: Provide more substep info to diagnose problem.
-                    step_line = u"%s %s" % (step.keyword, step.name)
-                    message = "%s SUB-STEP: %s" % \
-                              (step.status.name.upper(), step_line)
+                    step_line = "%s %s" % (step.keyword, step.name)
+                    message = "%s SUB-STEP: %s" % (step.status.name.upper(), step_line)
                     if step.error_message:
                         message += "\nSubstep info: %s\n" % step.error_message
-                        message += u"Traceback (of failed substep):\n"
-                        message += u"".join(traceback.format_tb(step.exc_traceback))
+                        message += "Traceback (of failed substep):\n"
+                        message += "".join(traceback.format_tb(step.exc_traceback))
                     # message += u"\nTraceback (of context.execute_steps()):"
                     assert False, message
 
@@ -501,8 +519,10 @@ class Context(object):
         assert self._stack
         layer_name = kwargs.pop("layer", None)
         if args or kwargs:
+
             def internal_cleanup_func():
                 cleanup_func(*args, **kwargs)
+
         else:
             internal_cleanup_func = cleanup_func
 
@@ -612,6 +632,7 @@ class ModelRunner(object):
 
         .. versionadded:: 1.3.0
     """
+
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, config, features=None, step_registry=None):
@@ -676,12 +697,12 @@ class ModelRunner(object):
                 if self.config.verbose:
                     use_traceback = True
                     ExceptionUtil.set_traceback(e)
-                extra = u""
+                extra = ""
                 if "tag" in name:
                     extra = "(tag=%s)" % args[0]
 
                 error_text = ExceptionUtil.describe(e, use_traceback).rstrip()
-                error_message = u"HOOK-ERROR in %s%s: %s" % (name, extra, error_text)
+                error_message = "HOOK-ERROR in %s%s: %s" % (name, extra, error_text)
                 print(error_message)
                 self.hook_failures += 1
                 if "tag" in name:
@@ -701,7 +722,7 @@ class ModelRunner(object):
                     if statement.error_message:
                         # -- NOTE: One exception/failure is already stored.
                         #    Append only error message.
-                        statement.error_message += u"\n"+ error_message
+                        statement.error_message += "\n" + error_message
                     else:
                         # -- FIRST EXCEPTION/FAILURE:
                         statement.store_exception_context(e)
@@ -747,6 +768,8 @@ class ModelRunner(object):
         failed_count = 0
         undefined_steps_initial_size = len(self.undefined_steps)
         for feature in features:
+            # feature <======
+            print("===>feature", feature)
             if run_feature:
                 try:
                     self.feature = feature
@@ -774,7 +797,7 @@ class ModelRunner(object):
         cleanups_failed = False
         self.run_hook("after_all", self.context)
         try:
-            self.context._do_cleanups()   # Without dropping the last context layer.
+            self.context._do_cleanups()  # Without dropping the last context layer.
         except Exception:
             cleanups_failed = True
 
@@ -785,10 +808,14 @@ class ModelRunner(object):
         for reporter in self.config.reporters:
             reporter.end()
 
-        failed = ((failed_count > 0) or self.aborted or (self.hook_failures > 0)
-                  or (len(self.undefined_steps) > undefined_steps_initial_size)
-                  or cleanups_failed)
-                  # XXX-MAYBE: or context.failed)
+        failed = (
+            (failed_count > 0)
+            or self.aborted
+            or (self.hook_failures > 0)
+            or (len(self.undefined_steps) > undefined_steps_initial_size)
+            or cleanups_failed
+        )
+        # XXX-MAYBE: or context.failed)
         return failed
 
     def run(self):
@@ -802,10 +829,10 @@ class ModelRunner(object):
 class Runner(ModelRunner):
     """Standard test runner for behave:
 
-      * setup paths
-      * loads environment hooks
-      * loads step definitions
-      * select feature files, parses them and creates model (elements)
+    * setup paths
+    * loads environment hooks
+    * loads step definitions
+    * select feature files, parses them and creates model (elements)
     """
 
     def __init__(self, config):
@@ -817,8 +844,10 @@ class Runner(ModelRunner):
         # pylint: disable=too-many-branches, too-many-statements
         if self.config.paths:
             if self.config.verbose:
-                print("Supplied path:", \
-                      ", ".join('"%s"' % path for path in self.config.paths))
+                print(
+                    "Supplied path:",
+                    ", ".join('"%s"' % path for path in self.config.paths),
+                )
             first_path = self.config.paths[0]
             if hasattr(first_path, "filename"):
                 # -- BETTER: isinstance(first_path, FileLocation):
@@ -864,14 +893,17 @@ class Runner(ModelRunner):
         if new_base_dir == root_dir:
             if self.config.verbose:
                 if not self.config.paths:
-                    print('ERROR: Could not find "%s" directory. '\
-                          'Please specify where to find your features.' % \
-                                steps_dir)
+                    print(
+                        'ERROR: Could not find "%s" directory. '
+                        "Please specify where to find your features." % steps_dir
+                    )
                 else:
-                    print('ERROR: Could not find "%s" directory in your '\
-                        'specified path "%s"' % (steps_dir, base_dir))
+                    print(
+                        'ERROR: Could not find "%s" directory in your '
+                        'specified path "%s"' % (steps_dir, base_dir)
+                    )
 
-            message = 'No %s directory in %r' % (steps_dir, base_dir)
+            message = "No %s directory in %r" % (steps_dir, base_dir)
             raise ConfigError(message)
 
         base_dir = new_base_dir
@@ -883,12 +915,16 @@ class Runner(ModelRunner):
         else:
             if self.config.verbose:
                 if not self.config.paths:
-                    print('ERROR: Could not find any "<name>.feature" files. '\
-                        'Please specify where to find your features.')
+                    print(
+                        'ERROR: Could not find any "<name>.feature" files. '
+                        "Please specify where to find your features."
+                    )
                 else:
-                    print('ERROR: Could not find any "<name>.feature" files '\
-                        'in your specified path "%s"' % base_dir)
-            raise ConfigError('No feature files in %r' % base_dir)
+                    print(
+                        'ERROR: Could not find any "<name>.feature" files '
+                        'in your specified path "%s"' % base_dir
+                    )
+            raise ConfigError("No feature files in %r" % base_dir)
 
         self.base_dir = base_dir
         self.path_manager.add(base_dir)
@@ -942,8 +978,11 @@ class Runner(ModelRunner):
         # self.run_hook("before_all", self.context)
 
         # -- STEP: Parse all feature files (by using their file location).
-        feature_locations = [filename for filename in self.feature_locations()
-                             if not self.config.exclude(filename)]
+        feature_locations = [
+            filename
+            for filename in self.feature_locations()
+            if not self.config.exclude(filename)
+        ]
         features = parse_features(feature_locations, language=self.config.lang)
         self.features.extend(features)
 
