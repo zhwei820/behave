@@ -2365,6 +2365,8 @@ file_path = "scenario_pass"
 
 
 def append_to_file(string_to_append):
+    if check_string_in_file(string_to_append):
+        return
     with open(file_path, "a+") as file:
         file.write(string_to_append + "\n")
 
