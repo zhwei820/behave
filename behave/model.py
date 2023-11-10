@@ -17,11 +17,17 @@ import logging
 import itertools
 import time
 import six
-from six.moves import zip       # pylint: disable=redefined-builtin
-from behave.model_core import \
-        Status, BasicStatement, TagAndStatusStatement, TagStatement, Replayable
+from six.moves import zip  # pylint: disable=redefined-builtin
+from behave.model_core import (
+    Status,
+    BasicStatement,
+    TagAndStatusStatement,
+    TagStatement,
+    Replayable,
+)
 from behave.matchers import NoMatch
 from behave.textutil import text as _text
+
 if six.PY2:
     # -- USE PYTHON3 BACKPORT: With unicode traceback support.
     import traceback2 as traceback
@@ -155,17 +161,27 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
 
        The line number of the *feature file* where the feature was found.
     """
+
     type = "feature_or_rule"
 
-    def __init__(self, filename, line, keyword, name, tags=None,
-                 description=None, scenarios=None, background=None):
+    def __init__(
+        self,
+        filename,
+        line,
+        keyword,
+        name,
+        tags=None,
+        description=None,
+        scenarios=None,
+        background=None,
+    ):
         tags = tags or []
         super(ScenarioContainer, self).__init__(filename, line, keyword, name, tags)
         self.description = description or []
         self.hook_failed = False
         self.run_starttime = 0
         self.run_endtime = 0
-        self.run_items = []     # CASE: Rule, Scenario, ScenarioOutline
+        self.run_items = []  # CASE: Rule, Scenario, ScenarioOutline
         self.scenarios = []
         self.background = background
         if scenarios:
@@ -276,8 +292,13 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
         return iter(self.walk_scenarios())
 
     def iter_scenario_outlines(self):
-        return iter([x for x in self.walk_scenarios(with_outlines=True)
-                     if isinstance(x, ScenarioOutline)])
+        return iter(
+            [
+                x
+                for x in self.walk_scenarios(with_outlines=True)
+                if isinstance(x, ScenarioOutline)
+            ]
+        )
 
     def iter_rules(self):
         return iter([x for x in self.run_items if isinstance(x, Rule)])
@@ -338,7 +359,7 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
         if reason:
             entity_name = self.type.upper()
             logger = logging.getLogger("behave")
-            logger.warning(u"SKIP %s %s: %s", entity_name, self.name, reason)
+            logger.warning("SKIP %s %s: %s", entity_name, self.name, reason)
 
         self.clear_status()
         self.should_skip = True
@@ -348,7 +369,7 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
         if not self.run_items:
             # -- SPECIAL CASE: Feature without scenarios
             self.set_status(Status.skipped)
-        assert self.status in self.final_status #< skipped, failed or passed.
+        assert self.status in self.final_status  # < skipped, failed or passed.
 
     def run(self, runner):
         """Run ScenarioContainer with its scenarios.
@@ -362,11 +383,11 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
         self.hook_failed = False
         self.run_starttime = time.time()
 
-        entity_name = self.type # VALUE: "feature" or "rule"
+        entity_name = self.type  # VALUE: "feature" or "rule"
         hook_before_entity = "before_{0}".format(entity_name)
         hook_after_entity = "after_{0}".format(entity_name)
 
-        runner.context._push(layer=entity_name)      # pylint: disable=protected-access
+        runner.context._push(layer=entity_name)  # pylint: disable=protected-access
         runner.context.tags = set(self.tags)
         self._setup_context_for_run(runner.context)
 
@@ -401,10 +422,14 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
             # -- RUN: Rules, Scenarios or ScenarioOutlines
             for run_item in self.run_items:
                 # -- OPTIONAL: Select scenario by name (regular expressions).
-                should_run_with_name = \
-                    getattr(run_item, "should_run_with_name_select", None)
-                if (runner.config.name and should_run_with_name and
-                        not should_run_with_name(runner.config)):
+                should_run_with_name = getattr(
+                    run_item, "should_run_with_name_select", None
+                )
+                if (
+                    runner.config.name
+                    and should_run_with_name
+                    and not should_run_with_name(runner.config)
+                ):
                     run_item.mark_skipped()
                     continue
 
@@ -430,8 +455,8 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
 
         # -- PERFORM CONTEXT CLEANUP: May raise cleanup errors.
         try:
-            runner.context._pop()       # pylint: disable=protected-access
-        except Exception:               # pylint: disable=broad-except
+            runner.context._pop()  # pylint: disable=protected-access
+        except Exception:  # pylint: disable=broad-except
             # -- CLEANUP-ERROR:
             self.set_status(Status.failed)
 
@@ -446,7 +471,7 @@ class ScenarioContainer(TagAndStatusStatement, Replayable):
                     formatter_callback()
 
         self.run_endtime = time.time()
-        failed = (failed_count > 0)
+        failed = failed_count > 0
         return failed
 
 
@@ -535,20 +560,33 @@ class Feature(ScenarioContainer):
 
     type = "feature"
 
-    def __init__(self, filename, line, keyword, name, tags=None,
-                 description=None, scenarios=None, background=None,
-                 language=None):
+    def __init__(
+        self,
+        filename,
+        line,
+        keyword,
+        name,
+        tags=None,
+        description=None,
+        scenarios=None,
+        background=None,
+        language=None,
+    ):
         tags = tags or []
-        super(Feature, self).__init__(filename, line, keyword, name, tags,
-                                      description, scenarios, background)
+        super(Feature, self).__init__(
+            filename, line, keyword, name, tags, description, scenarios, background
+        )
         self.rules = []
         self.language = language
         self.parser = None
 
     def __repr__(self):
-        return '<Feature "%s": %s run items, %d rules, %d scenarios>' % \
-            (self.name, len(self.run_items),
-             len(self.rules), len(self.scenarios))
+        return '<Feature "%s": %s run items, %d rules, %d scenarios>' % (
+            self.name,
+            len(self.run_items),
+            len(self.rules),
+            len(self.scenarios),
+        )
 
     def _setup_context_for_run(self, context):
         context.feature = self
@@ -676,14 +714,25 @@ class Rule(ScenarioContainer):
     .. versionadded:: 1.2.7
     .. _`rule`: gherkin.html#rule
     """
+
     type = "rule"
 
-    def __init__(self, filename, line, keyword, name, tags=None,
-                 description=None, scenarios=None, background=None,
-                 parent=None):
+    def __init__(
+        self,
+        filename,
+        line,
+        keyword,
+        name,
+        tags=None,
+        description=None,
+        scenarios=None,
+        background=None,
+        parent=None,
+    ):
         tags = tags or []
-        super(Rule, self).__init__(filename, line, keyword, name, tags,
-                                   description, scenarios, background)
+        super(Rule, self).__init__(
+            filename, line, keyword, name, tags, description, scenarios, background
+        )
         self.parent = parent
         self.feature = parent
         self._use_background_inheritance = True
@@ -692,8 +741,7 @@ class Rule(ScenarioContainer):
         context.rule = self
 
     def __repr__(self):
-        return '<Rule "%s": %d scenario(s)>' % \
-            (self.name, len(self.scenarios))
+        return '<Rule "%s": %d scenario(s)>' % (self.name, len(self.scenarios))
 
     def add_background(self, background, inherited=None):
         if inherited is None:
@@ -769,10 +817,18 @@ class Background(BasicStatement, Replayable):
 
     .. _`background`: gherkin.html#backgrounds
     """
+
     type = "background"
 
-    def __init__(self, filename, line, keyword=u"Background", name=u"",
-                 steps=None, description=None):
+    def __init__(
+        self,
+        filename,
+        line,
+        keyword="Background",
+        name="",
+        steps=None,
+        description=None,
+    ):
         super(Background, self).__init__(filename, line, keyword, name)
         self.description = description or []
         self.steps = steps or []
@@ -922,15 +978,26 @@ class Scenario(TagAndStatusStatement, Replayable):
 
     .. _`scenario`: gherkin.html#scenarios
     """
+
     # pylint: disable=too-many-instance-attributes
     type = "scenario"
     continue_after_failed_step = False
 
-    def __init__(self, filename, line, keyword, name, tags=None, steps=None,
-                 description=None, parent=None):
+    def __init__(
+        self,
+        filename,
+        line,
+        keyword,
+        name,
+        tags=None,
+        steps=None,
+        description=None,
+        parent=None,
+    ):
         tags = tags or []
-        super(Scenario, self).__init__(filename, line, keyword, name, tags,
-                                       parent=parent)
+        super(Scenario, self).__init__(
+            filename, line, keyword, name, tags, parent=parent
+        )
         self.description = description or []
         self.steps = steps or []
         self.background = None
@@ -1057,8 +1124,9 @@ class Scenario(TagAndStatusStatement, Replayable):
         """
         answer = not self.should_skip
         if answer and config:
-            answer = (self.should_run_with_tags(config.tag_expression) and
-                      self.should_run_with_name_select(config))
+            answer = self.should_run_with_tags(
+                config.tag_expression
+            ) and self.should_run_with_name_select(config)
         return answer
 
     def should_run_with_name_select(self, config):
@@ -1075,8 +1143,9 @@ class Scenario(TagAndStatusStatement, Replayable):
         Note that this method can be called before the scenario is executed.
         """
         self.skip(require_not_executed=True)
-        assert self.status == Status.skipped or self.hook_failed, \
-               "OOPS: scenario.status=%s" % self.status.name
+        assert self.status == Status.skipped or self.hook_failed, (
+            "OOPS: scenario.status=%s" % self.status.name
+        )
 
     def skip(self, reason=None, require_not_executed=False):
         """Skip from executing this scenario or the remaining parts of it.
@@ -1088,7 +1157,7 @@ class Scenario(TagAndStatusStatement, Replayable):
         if reason:
             scenario_type = self.__class__.__name__
             logger = logging.getLogger("behave")
-            logger.warning(u"SKIP %s %s: %s", scenario_type, self.name, reason)
+            logger.warning("SKIP %s %s: %s", scenario_type, self.name, reason)
 
         self.clear_status()
         self.should_skip = True
@@ -1098,13 +1167,14 @@ class Scenario(TagAndStatusStatement, Replayable):
             if not_executed:
                 step.status = Status.skipped
             else:
-                assert not require_not_executed, \
+                assert not require_not_executed, (
                     "REQUIRE NOT-EXECUTED, but step is %s" % step.status
+                )
 
         scenario_without_steps = not self.steps and not self.background_steps
         if scenario_without_steps:
             self.set_status(Status.skipped)
-        assert self.status in self.final_status #< skipped, failed or passed
+        assert self.status in self.final_status  # < skipped, failed or passed
 
     def run(self, runner):
         # pylint: disable=too-many-branches, too-many-statements
@@ -1118,9 +1188,11 @@ class Scenario(TagAndStatusStatement, Replayable):
         dry_run_scenario = run_scenario and runner.config.dry_run
         self.was_dry_run = dry_run_scenario
 
-        runner.context._push(layer="scenario")      # pylint: disable=protected-access
+        runner.context._push(layer="scenario")  # pylint: disable=protected-access
         runner.context.scenario = self
         runner.context.tags = set(self.effective_tags)
+
+        print("====>scenario", self)
 
         hooks_called = False
         if not runner.config.dry_run and run_scenario:
@@ -1157,8 +1229,10 @@ class Scenario(TagAndStatusStatement, Replayable):
                         # -- CASE: Failed or undefined step
                         #    Optionally continue_after_failed_step if enabled.
                         #    But disable run_steps after undefined-step.
-                        run_steps = (self.continue_after_failed_step and
-                                     step.status == Status.failed)
+                        run_steps = (
+                            self.continue_after_failed_step
+                            and step.status == Status.failed
+                        )
                         failed = True
                         # pylint: disable=protected-access
                         runner.context._set_root_attribute("failed", True)
@@ -1197,7 +1271,6 @@ class Scenario(TagAndStatusStatement, Replayable):
             # -- SPECIAL CASE: Scenario without steps.
             self.set_status(Status.skipped)
 
-
         if hooks_called:
             runner.run_hook("after_scenario", runner.context, self)
             for tag in self.tags:
@@ -1208,13 +1281,13 @@ class Scenario(TagAndStatusStatement, Replayable):
 
         # -- PERFORM CONTEXT-CLEANUP: May raise cleanup errors.
         try:
-            runner.context._pop()       # pylint: disable=protected-access
-        except Exception:               # pylint: disable=broad-except
+            runner.context._pop()  # pylint: disable=protected-access
+        except Exception:  # pylint: disable=broad-except
             self.set_status(Status.failed)
             failed = True
 
         # -- CAPTURED-OUTPUT:
-        store_captured = (runner.config.junit or self.status == Status.failed)
+        store_captured = runner.config.junit or self.status == Status.failed
         if store_captured:
             self.captured = runner.capture_controller.captured
 
@@ -1226,7 +1299,8 @@ class ScenarioOutlineBuilder(object):
     """Helper class to use a ScenarioOutline as a template and
     build its scenarios (as template instances).
     """
-    annotation_schema = u"{name} -- @{row.id} {examples.name}"
+
+    annotation_schema = "{name} -- @{row.id} {examples.name}"
 
     def __init__(self, annotation_schema=None):
         if annotation_schema is None:
@@ -1250,8 +1324,8 @@ class ScenarioOutlineBuilder(object):
                 continue
             for name, value in placeholders.items():
                 if safe_values and ("<" in value and ">" in value):
-                    continue    # -- OOPS, value looks like placeholder.
-                placeholder = u"<%s>" % name
+                    continue  # -- OOPS, value looks like placeholder.
+                placeholder = "<%s>" % name
                 text = text.replace(placeholder, value)
         return text
 
@@ -1283,12 +1357,13 @@ class ScenarioOutlineBuilder(object):
             def __init__(self, name, index):
                 self.name = name
                 self.index = index
-                self.id = name      # pylint: disable=invalid-name
+                self.id = name  # pylint: disable=invalid-name
 
         example_data = Data(examples_name, example.index)
         row_data = Data(row.id, row.index)
-        return self.annotation_schema.format(name=scenario_name,
-                                             examples=example_data, row=row_data)
+        return self.annotation_schema.format(
+            name=scenario_name, examples=example_data, row=row_data
+        )
 
     @staticmethod
     def is_parametrized_tag(tag):
@@ -1319,7 +1394,7 @@ class ScenarioOutlineBuilder(object):
             new_step.text = cls.render_template(new_step.text, row)
         if new_step.table:
             for name, value in row.items():
-                placeholder = u"<%s>" % name
+                placeholder = "<%s>" % name
                 for i, cell in enumerate(new_step.table.headings):
                     new_step.table.headings[i] = cell.replace(placeholder, value)
                 for step_row in new_step.table:
@@ -1338,22 +1413,26 @@ class ScenarioOutlineBuilder(object):
         }
         scenarios = []
         for example_index, example in enumerate(scenario_outline.examples):
-            example.index = example_index+1
+            example.index = example_index + 1
             params["examples.name"] = example.name
             params["examples.index"] = _text(example.index)
             if not example.table:
                 # -- SYNDROME: Examples keyword without table
-                print("ERROR: ScenarioOutline.Examples: Has NO-TABLE syndrome ({0})"\
-                      .format(example.location))
+                print(
+                    "ERROR: ScenarioOutline.Examples: Has NO-TABLE syndrome ({0})".format(
+                        example.location
+                    )
+                )
                 continue
 
             for row_index, row in enumerate(example.table):
-                row.index = row_index+1
+                row.index = row_index + 1
                 row.id = "%d.%d" % (example.index, row.index)
                 params["row.id"] = row.id
                 params["row.index"] = _text(row.index)
-                scenario_name = self.make_scenario_name(scenario_outline.name,
-                                                        example, row, params)
+                scenario_name = self.make_scenario_name(
+                    scenario_outline.name, example, row, params
+                )
                 row_tags = self.make_row_tags(scenario_outline.tags, row, params)
                 row_tags.extend(example.tags)
                 new_steps = []
@@ -1364,14 +1443,19 @@ class ScenarioOutlineBuilder(object):
                 # -- STEP: Make Scenario name for this row.
                 # scenario_line = example.line + 2 + row_index
                 scenario_line = row.line
-                scenario = Scenario(scenario_outline.filename, scenario_line,
-                                    scenario_outline.keyword,
-                                    scenario_name, row_tags, new_steps)
+                scenario = Scenario(
+                    scenario_outline.filename,
+                    scenario_line,
+                    scenario_outline.keyword,
+                    scenario_name,
+                    row_tags,
+                    new_steps,
+                )
                 scenario.feature = scenario_outline.feature
                 scenario.parent = scenario_outline
                 scenario.background = scenario_outline.background
                 scenario.description = scenario_outline.description
-                scenario._row = row     # pylint: disable=protected-access
+                scenario._row = row  # pylint: disable=protected-access
                 scenarios.append(scenario)
         return scenarios
 
@@ -1451,20 +1535,31 @@ class ScenarioOutline(Scenario):
 
     .. _`scenario outline`: gherkin.html#scenario-outlines
     """
+
     type = "scenario_outline"
     annotation_schema = ScenarioOutlineBuilder.annotation_schema
 
-    def __init__(self, filename, line, keyword, name, tags=None,
-                 steps=None, examples=None, description=None):
-        super(ScenarioOutline, self).__init__(filename, line, keyword, name,
-                                              tags, steps, description)
+    def __init__(
+        self,
+        filename,
+        line,
+        keyword,
+        name,
+        tags=None,
+        steps=None,
+        examples=None,
+        description=None,
+    ):
+        super(ScenarioOutline, self).__init__(
+            filename, line, keyword, name, tags, steps, description
+        )
         self.examples = examples or []
         self._scenarios = []
 
     def reset(self):
         """Reset runtime temporary data like before a test run."""
         super(ScenarioOutline, self).reset()
-        for scenario in self._scenarios:    # -- AVOID: BUILD-SCENARIOS
+        for scenario in self._scenarios:  # -- AVOID: BUILD-SCENARIOS
             scenario.reset()
 
     @property
@@ -1492,8 +1587,13 @@ class ScenarioOutline(Scenario):
         """
         # -- SPECIAL CASE: ScenarioOutline/ScenarioTemplate
         # Filter out "abstract tags" (parametrized tags) used in this template.
-        tags = set([tag for tag in self.tags
-                    if not ScenarioOutlineBuilder.is_parametrized_tag(tag)])
+        tags = set(
+            [
+                tag
+                for tag in self.tags
+                if not ScenarioOutlineBuilder.is_parametrized_tag(tag)
+            ]
+        )
         if self.parent:
             # -- INHERIT TAGS: From parent(s), recursively
             inherited_tags = self.parent.effective_tags
@@ -1504,11 +1604,11 @@ class ScenarioOutline(Scenario):
         return '<ScenarioOutline "%s">' % self.name
 
     def __iter__(self):
-        return iter(self.scenarios) # -- REQUIRE: BUILD-SCENARIOS
+        return iter(self.scenarios)  # -- REQUIRE: BUILD-SCENARIOS
 
     def compute_status(self):
         skipped_count = 0
-        for scenario in self._scenarios:    # -- AVOID: BUILD-SCENARIOS
+        for scenario in self._scenarios:  # -- AVOID: BUILD-SCENARIOS
             scenario_status = scenario.status
             if scenario_status in (Status.failed, Status.untested):
                 return scenario_status
@@ -1523,7 +1623,7 @@ class ScenarioOutline(Scenario):
     @property
     def duration(self):
         outline_duration = 0
-        for scenario in self._scenarios:    # -- AVOID: BUILD-SCENARIOS
+        for scenario in self._scenarios:  # -- AVOID: BUILD-SCENARIOS
             outline_duration += scenario.duration
         return outline_duration
 
@@ -1537,7 +1637,7 @@ class ScenarioOutline(Scenario):
         if tag_expression.check(self.effective_tags):
             return True
 
-        for scenario in self.scenarios:     # -- REQUIRE: BUILD-SCENARIOS
+        for scenario in self.scenarios:  # -- REQUIRE: BUILD-SCENARIOS
             if scenario.should_run_with_tags(tag_expression):
                 return True
         # -- NOTHING SELECTED:
@@ -1550,14 +1650,13 @@ class ScenarioOutline(Scenario):
         :return: True, if scenario should run. False, otherwise (skip it).
         """
         if not config.name:
-            return True # -- SELECT-ALL: Select by name is not specified.
+            return True  # -- SELECT-ALL: Select by name is not specified.
 
-        for scenario in self.scenarios:     # -- REQUIRE: BUILD-SCENARIOS
+        for scenario in self.scenarios:  # -- REQUIRE: BUILD-SCENARIOS
             if scenario.should_run_with_name_select(config):
                 return True
         # -- NOTHING SELECTED:
         return False
-
 
     def mark_skipped(self):
         """Marks this scenario outline (and all its scenarios/steps) as skipped.
@@ -1576,7 +1675,7 @@ class ScenarioOutline(Scenario):
         """
         if reason:
             logger = logging.getLogger("behave")
-            logger.warning(u"SKIP ScenarioOutline %s: %s", self.name, reason)
+            logger.warning("SKIP ScenarioOutline %s: %s", self.name, reason)
 
         self.clear_status()
         self.should_skip = True
@@ -1585,14 +1684,14 @@ class ScenarioOutline(Scenario):
         if not self.scenarios:
             # -- SPECIAL CASE: ScenarioOutline without scenarios/examples
             self.set_status(Status.skipped)
-        assert self.status in self.final_status #< skipped, failed or passed
+        assert self.status in self.final_status  # < skipped, failed or passed
 
     def run(self, runner):
         # pylint: disable=protected-access
         # REASON: context._set_root_attribute(), scenario._row
         self.clear_status()
         failed_count = 0
-        for scenario in self.scenarios:     # -- REQUIRE: BUILD-SCENARIOS
+        for scenario in self.scenarios:  # -- REQUIRE: BUILD-SCENARIOS
             runner.context._set_root_attribute("active_outline", scenario._row)
             failed = scenario.run(runner)
             if failed:
@@ -1602,6 +1701,7 @@ class ScenarioOutline(Scenario):
                     break
         runner.context._set_root_attribute("active_outline", None)
         return failed_count > 0
+
 
 class Examples(TagStatement, Replayable):
     """A table parsed from a `scenario outline`_ in a *feature file*.
@@ -1633,6 +1733,7 @@ class Examples(TagStatement, Replayable):
 
     .. _`examples`: gherkin.html#examples
     """
+
     type = "examples"
 
     def __init__(self, filename, line, keyword, name, tags=None, table=None):
@@ -1720,10 +1821,10 @@ class Step(BasicStatement, Replayable):
 
     .. _`step`: gherkin.html#steps
     """
+
     type = "step"
 
-    def __init__(self, filename, line, keyword, step_type, name, text=None,
-                 table=None):
+    def __init__(self, filename, line, keyword, step_type, name, text=None, table=None):
         super(Step, self).__init__(filename, line, keyword, name)
         self.step_type = step_type
         self.text = text
@@ -1761,8 +1862,12 @@ class Step(BasicStatement, Replayable):
             Use 'ScenarioOutlineBuilder.make_step_for_row()' instead.
         """
         import warnings
-        warnings.warn("Use 'ScenarioOutline.make_step_for_row()' instead",
-                      PendingDeprecationWarning, stacklevel=2)
+
+        warnings.warn(
+            "Use 'ScenarioOutline.make_step_for_row()' instead",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         outline_step = self
         return ScenarioOutlineBuilder.make_step_for_row(outline_step, table_row)
 
@@ -1787,7 +1892,7 @@ class Step(BasicStatement, Replayable):
             return False
 
         keep_going = True
-        error = u""
+        error = ""
 
         if not quiet:
             for formatter in runner.formatters:
@@ -1815,7 +1920,7 @@ class Step(BasicStatement, Replayable):
                     self.status = Status.passed
             except KeyboardInterrupt as e:
                 runner.abort(reason="KeyboardInterrupt")
-                error = u"ABORTED: By user (KeyboardInterrupt)."
+                error = "ABORTED: By user (KeyboardInterrupt)."
                 self.status = Status.failed
                 self.store_exception_context(e)
             except AssertionError as e:
@@ -1823,11 +1928,11 @@ class Step(BasicStatement, Replayable):
                 self.store_exception_context(e)
                 if e.args:
                     message = _text(e)
-                    error = u"Assertion Failed: "+ message
+                    error = "Assertion Failed: " + message
                 else:
                     # no assertion text; format the exception
                     error = _text(traceback.format_exc())
-            except Exception as e:      # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 self.status = Status.failed
                 error = _text(traceback.format_exc())
                 self.store_exception_context(e)
@@ -1841,7 +1946,7 @@ class Step(BasicStatement, Replayable):
             runner.stop_capture()
 
         # flesh out the failure with details
-        store_captured_always = False   # PREPARED
+        store_captured_always = False  # PREPARED
         store_captured = self.status == Status.failed or store_captured_always
         if self.status == Status.failed:
             assert isinstance(error, six.text_type)
@@ -1893,6 +1998,7 @@ class Table(Replayable):
 
     .. _`table`: gherkin.html#table
     """
+
     type = "table"
 
     def __init__(self, headings, line=None, rows=None):
@@ -1907,7 +2013,7 @@ class Table(Replayable):
     def add_row(self, row, line=None):
         self.rows.append(Row(self.headings, row, line))
 
-    def add_column(self, column_name, values=None, default_value=u""):
+    def add_column(self, column_name, values=None, default_value=""):
         """Adds a new column to this table.
         Uses :param:`default_value` for new cells (if :param:`values` are
         not provided). param:`values` are extended with :param:`default_value`
@@ -2063,6 +2169,7 @@ class Row(object):
 
     .. _`table`: gherkin.html#table
     """
+
     def __init__(self, headings, cells, line=None, comments=None):
         self.headings = headings
         self.comments = comments
@@ -2110,6 +2217,7 @@ class Row(object):
         :return: Row data as dictionary (without comments, line info).
         """
         from behave.compat.collections import OrderedDict
+
         return OrderedDict(self.items())
 
 
@@ -2122,7 +2230,8 @@ class Tag(six.text_type):
 
     See :ref:`controlling things with tags`.
     """
-    allowed_chars = u"._-=:,;()"    # In addition to aplha-numerical chars.
+
+    allowed_chars = "._-=:,;()"  # In addition to aplha-numerical chars.
     quoting_chars = ("'", '"', "<", ">")
 
     def __new__(cls, name, line):
@@ -2167,14 +2276,14 @@ class Tag(six.text_type):
             if char.isalnum() or (allowed_chars and char in allowed_chars):
                 chars.append(char)
             elif char.isspace():
-                chars.append(u"_")
+                chars.append("_")
             elif char in cls.quoting_chars:
-                pass    # -- NORMALIZE: Remove any quoting chars.
+                pass  # -- NORMALIZE: Remove any quoting chars.
             # -- MAYBE:
             # else:
             #     # -- OTHERWISE: Accept gracefully any other character.
             #     chars.append(char)
-        return u"".join(chars)
+        return "".join(chars)
 
 
 class Text(six.text_type):
@@ -2190,7 +2299,8 @@ class Text(six.text_type):
 
        Currently only "text/plain".
     """
-    def __new__(cls, value, content_type=u"text/plain", line=0):
+
+    def __new__(cls, value, content_type="text/plain", line=0):
         assert isinstance(value, six.text_type)
         assert isinstance(content_type, six.text_type)
         o = six.text_type.__new__(cls, value)
@@ -2203,8 +2313,9 @@ class Text(six.text_type):
         return (self.line, self.line + line_count + 1)
 
     def replace(self, old, new, count=-1):
-        return Text(super(Text, self).replace(old, new, count), self.content_type,
-                    self.line)
+        return Text(
+            super(Text, self).replace(old, new, count), self.content_type, self.line
+        )
 
     def assert_equals(self, expected):
         """Assert that my text is identical to the "expected" text.
@@ -2216,8 +2327,7 @@ class Text(six.text_type):
 
         # -- DETAILED HINTS: Why comparison failed.
         diff = []
-        for line in difflib.unified_diff(self.splitlines(),
-                                         expected.splitlines()):
+        for line in difflib.unified_diff(self.splitlines(), expected.splitlines()):
             diff.append(line)
         if not diff:
             # -- MAYBE: Only differences in line-endings => GRACEFULLY ACCEPT as OK.
@@ -2225,7 +2335,7 @@ class Text(six.text_type):
 
         # -- HINT: Strip unnecessary diff prefix
         diff = ["Text does not match:"] + diff[3:]
-        raise AssertionError("\n".join(diff) +";")
+        raise AssertionError("\n".join(diff) + ";")
 
 
 # -----------------------------------------------------------------------------

@@ -44,8 +44,9 @@ def find_packages_by_root_package(where):
     collect only what is needed.
     """
     root_package = os.path.basename(where)
-    packages = [ "%s.%s" % (root_package, sub_package)
-                 for sub_package in find_packages(where)]
+    packages = [
+        "%s.%s" % (root_package, sub_package) for sub_package in find_packages(where)
+    ]
     packages.insert(0, root_package)
     return packages
 
@@ -55,22 +56,18 @@ def find_packages_by_root_package(where):
 # -----------------------------------------------------------------------------
 setup(
     name="behave",
-    version="1.2.7.dev5",
+    version="1.2.7.dev5.1",
     description="behave is behaviour-driven development, Python style",
     long_description=description,
     author="Jens Engel, Benno Rice and Richard Jones",
     author_email="behave-users@googlegroups.com",
     url="https://github.com/behave/behave",
-    provides = ["behave", "setuptools_behave"],
-    packages = find_packages_by_root_package(BEHAVE),
-    py_modules = ["setuptools_behave"],
+    provides=["behave", "setuptools_behave"],
+    packages=find_packages_by_root_package(BEHAVE),
+    py_modules=["setuptools_behave"],
     entry_points={
-        "console_scripts": [
-            "behave = behave.__main__:main"
-        ],
-        "distutils.commands": [
-            "behave_test = setuptools_behave:behave_test"
-        ]
+        "console_scripts": ["behave = behave.__main__:main"],
+        "distutils.commands": ["behave_test = setuptools_behave:behave_test"],
     },
     # -- REQUIREMENTS:
     # SUPPORT: python2.7, python3.3 (or higher)
@@ -82,7 +79,6 @@ setup(
         "parse-type >= 0.6.0",
         "six >= 1.15.0",
         "traceback2; python_version < '3.0'",
-
         # -- PREPARED:
         "win_unicode_console; python_version <= '3.9'",
         "contextlib2;  python_version < '3.5'",
@@ -90,7 +86,7 @@ setup(
         "colorama >= 0.3.7",
     ],
     tests_require=[
-        "pytest <  5.0; python_version <  '3.0'", # USE: pytest >= 4.2
+        "pytest <  5.0; python_version <  '3.0'",  # USE: pytest >= 4.2
         "pytest >= 5.0; python_version >= '3.0'",
         "pytest-html >= 1.19.0,<2.0; python_version <  '3.0'",
         "pytest-html >= 2.0;         python_version >= '3.0'",
@@ -99,21 +95,17 @@ setup(
         "PyHamcrest >= 2.0.2; python_version >= '3.0'",
         "PyHamcrest <  2.0;   python_version <  '3.0'",
         "assertpy >= 1.1",
-
         # -- HINT: path.py => path (python-install-package was renamed for python3)
         "path >= 13.1.0;         python_version >= '3.5'",
         "path.py >=11.5.0,<13.0; python_version <  '3.5'",
         # -- PYTHON2 BACKPORTS:
         "pathlib;    python_version <= '3.4'",
     ],
-    cmdclass = {
+    cmdclass={
         "behave_test": behave_test,
     },
     extras_require={
-        "docs": [
-            "sphinx >= 1.6",
-            "sphinx_bootstrap_theme >= 0.6"
-        ],
+        "docs": ["sphinx >= 1.6", "sphinx_bootstrap_theme >= 0.6"],
         "develop": [
             "build >= 0.5.1",
             "twine >= 1.13.0",
@@ -127,7 +119,7 @@ setup(
             "PyHamcrest >= 2.0.2; python_version >= '3.0'",
             "PyHamcrest <  2.0;   python_version <  '3.0'",
             "pytest-cov",
-            "tox   >= 1.8.1,<4.0",   # -- HINT: tox >= 4.0 has breaking changes.
+            "tox   >= 1.8.1,<4.0",  # -- HINT: tox >= 4.0 has breaking changes.
             "virtualenv < 20.22.0",  # -- SUPPORT FOR: Python 2.7, Python <= 3.6
             "invoke >=1.7.0,<2.0; python_version <  '3.6'",
             "invoke >=1.7.0;      python_version >= '3.6'",
@@ -139,10 +131,10 @@ setup(
             "modernize >= 0.5",
             "pylint",
         ],
-        'formatters': [
+        "formatters": [
             "behave-html-formatter",
         ],
-        'toml': [  # Enable pyproject.toml support.
+        "toml": [  # Enable pyproject.toml support.
             "tomli>=1.1.0; python_version >=  '3.0' and python_version < '3.11'",
             "toml>=0.10.2; python_version <  '3.0'",  # py27 support
         ],
@@ -170,5 +162,5 @@ setup(
         "Topic :: Software Development :: Testing",
         "License :: OSI Approved :: BSD License",
     ],
-    zip_safe = True,
+    zip_safe=True,
 )
