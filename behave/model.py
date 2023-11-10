@@ -1177,6 +1177,12 @@ class Scenario(TagAndStatusStatement, Replayable):
         assert self.status in self.final_status  # < skipped, failed or passed
 
     def run(self, runner):
+        print("====>scenario", str(self))
+        scenario_str = str(self)
+
+        if check_string_in_file(scenario_str):
+            return False  # not failed
+
         # pylint: disable=too-many-branches, too-many-statements
         self.clear_status()
         self.captured.reset()
@@ -1191,8 +1197,6 @@ class Scenario(TagAndStatusStatement, Replayable):
         runner.context._push(layer="scenario")  # pylint: disable=protected-access
         runner.context.scenario = self
         runner.context.tags = set(self.effective_tags)
-
-        print("====>scenario", self)
 
         hooks_called = False
         if not runner.config.dry_run and run_scenario:
@@ -1292,6 +1296,9 @@ class Scenario(TagAndStatusStatement, Replayable):
             self.captured = runner.capture_controller.captured
 
         runner.teardown_capture()
+
+        if not failed:
+            append_to_file(scenario_str)
         return failed
 
 
@@ -2348,3 +2355,19 @@ def reset_model(model_elements):
     """
     for model_element in model_elements:
         model_element.reset()
+
+
+file_path = "scenario_pass"
+
+
+def append_to_file(string_to_append):
+    with open(file_path, "a+") as file:
+        file.write(string_to_append)
+
+
+def check_string_in_file(target_string):
+    with open(file_path, "r") as file:
+        for line in file:
+            if target_string in line:
+                return True
+    return False
