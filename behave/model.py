@@ -1177,10 +1177,12 @@ class Scenario(TagAndStatusStatement, Replayable):
         assert self.status in self.final_status  # < skipped, failed or passed
 
     def run(self, runner):
-        print("====>scenario", str(self))
         scenario_str = str(self)
+        print("====>scenario start", scenario_str)
 
         if check_string_in_file(scenario_str):
+            print("=====>scenario passed previously", scenario_str)
+            self.set_status(Status.passed)
             return False  # not failed
 
         # pylint: disable=too-many-branches, too-many-statements
