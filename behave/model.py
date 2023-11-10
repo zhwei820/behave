@@ -2366,8 +2366,11 @@ def append_to_file(string_to_append):
 
 
 def check_string_in_file(target_string):
-    with open(file_path, "r") as file:
-        for line in file:
-            if target_string in line:
-                return True
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                if target_string in line:
+                    return True
+    except Exception as e:
+        pass
     return False
