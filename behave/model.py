@@ -2371,7 +2371,7 @@ def check_string_in_file(target_string):
     try:
         with open(file_path, "r") as file:
             for line in file:
-                print("===>line", line)
+                # print("===>line", line)
                 if target_string in line:
                     return True
     except Exception as e:
