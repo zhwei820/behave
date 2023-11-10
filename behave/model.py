@@ -1299,7 +1299,7 @@ class Scenario(TagAndStatusStatement, Replayable):
 
         runner.teardown_capture()
 
-        if not failed:
+        if not failed and self.status() == Status.passed:
             append_to_file(scenario_str)
         return failed
 
@@ -2364,13 +2364,14 @@ file_path = "scenario_pass"
 
 def append_to_file(string_to_append):
     with open(file_path, "a+") as file:
-        file.write(string_to_append)
+        file.write(string_to_append + "\n")
 
 
 def check_string_in_file(target_string):
     try:
         with open(file_path, "r") as file:
             for line in file:
+                print("===>line", line)
                 if target_string in line:
                     return True
     except Exception as e:

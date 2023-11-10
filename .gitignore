@@ -29,3 +29,4 @@ tools/virtualenvs
 .coverage
 rerun.txt
 testrun*.json
+scenario_pass
