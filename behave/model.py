@@ -1178,7 +1178,7 @@ class Scenario(TagAndStatusStatement, Replayable):
 
     def run(self, runner):
         scenario_str = str(self)
-        print("====>scenario start", scenario_str)
+        # print("====>scenario start", scenario_str)
 
         if check_string_in_file(scenario_str):
             print("=====>scenario passed previously", scenario_str)
@@ -1299,7 +1299,7 @@ class Scenario(TagAndStatusStatement, Replayable):
 
         runner.teardown_capture()
 
-        if not failed and self.status() == Status.passed:
+        if not failed and self.status == Status.passed:
             append_to_file(scenario_str)
         return failed
 
