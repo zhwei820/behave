@@ -525,8 +525,11 @@ With "strict", only tag-expressions v2 are supported (better error diagnostics).
         dict(action="store_true", help="Stop running tests at the first failure."),
     ),
     (
-        ("--no_check_previous",),
-        dict(action="store_true", help="no_check_previous.", dest=False),
+        ("--check_previous",),
+        dict(
+            action="store_true",
+            help="check_previous.",
+        ),
     ),
     (
         ("-s",),
