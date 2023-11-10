@@ -1180,7 +1180,7 @@ class Scenario(TagAndStatusStatement, Replayable):
         scenario_str = str(self)
         # print("====>scenario start", scenario_str)
 
-        if not getattr(runner.config, "check_previous", False) and check_string_in_file(
+        if getattr(runner.config, "check_previous", False) and check_string_in_file(
             scenario_str
         ):
             print("=====>scenario passed previously", scenario_str)
