@@ -88,6 +88,7 @@ def parse_rule(text, language=None, filename=None):
         raise
     return result
 
+
 def parse_steps(text, language=None, filename=None):
     """Parse a number of steps a multi-line text from a scenario.
     Scenario line with title and keyword is not provided.
@@ -137,20 +138,27 @@ class ParserError(Exception):
     def make_annotated(message, line_number, line_text=None, reason=None):
         """Make annotated message enriched w/ line_number, line_text."""
         if line_number:
-            message += u" at line %d" % line_number
+            message += " at line %d" % line_number
         if line_text:
-            message += u': "%s"' % line_text.strip()
+            message += ': "%s"' % line_text.strip()
         if reason:
-            message += u"\nREASON: %s" % reason
+            message += "\nREASON: %s" % reason
         return message
 
-    def __init__(self, message, line, filename=None, line_text=None,
-                 reason=None, use_annotated_message=True):
+    def __init__(
+        self,
+        message,
+        line,
+        filename=None,
+        line_text=None,
+        reason=None,
+        use_annotated_message=True,
+    ):
         if use_annotated_message:
             message = self.make_annotated(message, line, line_text, reason)
 
         super(ParserError, self).__init__(message)
-        self.line = line    # Line number of parse failure.
+        self.line = line  # Line number of parse failure.
         self.line_text = line_text
         self.filename = filename
 
@@ -158,9 +166,9 @@ class ParserError(Exception):
         arg0 = _text(self.args[0])
         if self.filename:
             filename = _text(self.filename, sys.getfilesystemencoding())
-            return u'Failed to parse "%s": %s' % (filename, arg0)
+            return 'Failed to parse "%s": %s' % (filename, arg0)
         # -- OTHERWISE:
-        return u"Failed to parse <string>: %s" % arg0
+        return "Failed to parse <string>: %s" % arg0
 
     if six.PY2:
         __unicode__ = __str__
@@ -169,6 +177,7 @@ class ParserError(Exception):
 
 class Parser(object):
     """Feature file parser for behave."""
+
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, language=None, variant=None):
@@ -244,10 +253,11 @@ class Parser(object):
         return feature
 
     def _build_feature(self, keyword, line):
-        name = line[len(keyword) + 1:].strip()
+        name = line[len(keyword) + 1 :].strip()
         language = self.language or DEFAULT_LANGUAGE
-        feature = model.Feature(self.filename, self.line, keyword, name,
-                                tags=self.tags, language=language)
+        feature = model.Feature(
+            self.filename, self.line, keyword, name, tags=self.tags, language=language
+        )
         self.feature = feature
         self.scenario_container = feature
         self.rule = None
@@ -255,9 +265,8 @@ class Parser(object):
         self.tags = []
 
     def _build_rule_statement(self, keyword, line):
-        name = line[len(keyword) + 1:].strip()
-        rule = model.Rule(self.filename, self.line, keyword, name,
-                          tags=self.tags)
+        name = line[len(keyword) + 1 :].strip()
+        rule = model.Rule(self.filename, self.line, keyword, name, tags=self.tags)
         self.rule = rule
         self.scenario_container = rule
         self.statement = rule
@@ -267,22 +276,23 @@ class Parser(object):
 
     def _build_background_statement(self, keyword, line):
         if self.tags:
-            msg = u"Background supports no tags: @%s" % (u" @".join(self.tags))
+            msg = "Background supports no tags: @%s" % (" @".join(self.tags))
             raise ParserError(msg, self.line, self.filename, line)
         elif self.scenario_container and self.scenario_container.background:
             if self.scenario_container.background.steps:
                 # -- HINT: Rule may have default background w/o steps.
-                msg = u"Second Background (can have only one)"
+                msg = "Second Background (can have only one)"
                 raise ParserError(msg, self.line, self.filename, line)
-        name = line[len(keyword) + 1:].strip()
+        name = line[len(keyword) + 1 :].strip()
         background = model.Background(self.filename, self.line, keyword, name)
         self.scenario_container.add_background(background)
         self.statement = background
 
     def _build_scenario_statement(self, keyword, line):
-        name = line[len(keyword) + 1:].strip()
-        scenario = model.Scenario(self.filename, self.line, keyword, name,
-                                  tags=self.tags)
+        name = line[len(keyword) + 1 :].strip()
+        scenario = model.Scenario(
+            self.filename, self.line, keyword, name, tags=self.tags
+        )
         self.statement = scenario
         self.scenario_container.add_scenario(scenario)
         # OLD: self.feature.add_scenario(self.statement)
@@ -292,9 +302,10 @@ class Parser(object):
     def _build_scenario_outline_statement(self, keyword, line):
         # pylint: disable=C0103
         #   C0103   Invalid name "build_scenario_outline_statement", too long.
-        name = line[len(keyword) + 1:].strip()
-        template = model.ScenarioOutline(self.filename, self.line, keyword, name,
-                                         tags=self.tags)
+        name = line[len(keyword) + 1 :].strip()
+        template = model.ScenarioOutline(
+            self.filename, self.line, keyword, name, tags=self.tags
+        )
         self.statement = template
         self.scenario_container.add_scenario(template)
         # OLD: self.feature.add_scenario(self.statement)
@@ -303,11 +314,12 @@ class Parser(object):
 
     def _build_examples(self, keyword, line):
         if not isinstance(self.statement, model.ScenarioOutline):
-            message = u"Examples must only appear inside scenario outline"
+            message = "Examples must only appear inside scenario outline"
             raise ParserError(message, self.line, self.filename, line)
-        name = line[len(keyword) + 1:].strip()
-        self.examples = model.Examples(self.filename, self.line,
-                                       keyword, name, tags=self.tags)
+        name = line[len(keyword) + 1 :].strip()
+        self.examples = model.Examples(
+            self.filename, self.line, keyword, name, tags=self.tags
+        )
         # pylint: disable=E1103
         #   E1103   Instance of "Background" has no "examples" member
         #           (but some types could not be inferred).
@@ -315,7 +327,6 @@ class Parser(object):
 
         # -- RESET STATE:
         self.tags = []
-
 
     def diagnose_feature_usage_error(self):
         if self.feature:
@@ -342,7 +353,7 @@ class Parser(object):
         # -- OTHERWISE:
         return "Scenario should not be used here."
 
-    def diagnose_scenario_outline_usage_error(self): # pylint: disable=invalid-name
+    def diagnose_scenario_outline_usage_error(self):  # pylint: disable=invalid-name
         if not self.scenario_container:
             return "ScenarioOutline may not occur before Feature."
         # -- OTHERWISE:
@@ -396,15 +407,16 @@ class Parser(object):
         func = getattr(self, "action_" + self.state, None)
         if func is None:
             line = line.strip()
-            msg = u"Parser in unknown state %s;" % self.state
+            msg = "Parser in unknown state %s;" % self.state
             raise ParserError(msg, self.line, self.filename, line)
 
         if not func(line):
             line = line.strip()
-            msg = u'\nParser failure in state=%s' % self.state
+            msg = "\nParser failure in state=%s" % self.state
             reason = self.ask_parse_failure_oracle(line)
-            raise ParserError(msg, self.line, self.filename,
-                              line_text=line, reason=reason)
+            raise ParserError(
+                msg, self.line, self.filename, line_text=line, reason=reason
+            )
 
     def action_init(self, line):
         line = line.strip()
@@ -462,6 +474,7 @@ class Parser(object):
 
         # -- OTHERWISE:
         return False
+
     # pylint: enable=invalid-name
 
     def action_feature(self, line):
@@ -535,7 +548,6 @@ class Parser(object):
         self.rule.description.append(line)
         return True
 
-
     def action_scenario(self, line):
         """Entered when Scenario/ScenarioOutline keyword/line is detected.
         Hunts/collects scenario description lines.
@@ -598,8 +610,9 @@ class Parser(object):
             # -- CASE: Multi-line text (docstring) after a step detected.
             # REQUIRE: Multi-line text follows a step.
             if not self.statement.steps:
-                raise ParserError("Multi-line text before any step",
-                                  self.line, self.filename)
+                raise ParserError(
+                    "Multi-line text before any step", self.line, self.filename
+                )
 
             self.state = "multiline_text"
             self.multiline_start = self.line
@@ -621,8 +634,9 @@ class Parser(object):
             # -- CASE: TABLE-START detected for data-table of a step
             # OLD: assert self.statement.steps, "TABLE-START without step detected"
             if not self.statement.steps:
-                raise ParserError("TABLE-START without step detected",
-                                  self.line, self.filename)
+                raise ParserError(
+                    "TABLE-START without step detected", self.line, self.filename
+                )
             self.state = "table"
             return self.action_table(line)
 
@@ -643,28 +657,30 @@ class Parser(object):
             # -- CASE: Handle the end of a multi-line text part.
             # Store the multi-line text in the step object (and continue).
             this_step = self.statement.steps[-1]
-            text = u"\n".join(self.lines)
-            this_step.text = model.Text(text, u"text/plain", self.multiline_start)
+            text = "\n".join(self.lines)
+            this_step.text = model.Text(text, "text/plain", self.multiline_start)
             if this_step.name.endswith(":"):
                 this_step.name = this_step.name[:-1]
 
             # -- RESET INTERNALS: For next step
             self.lines = []
             self.multiline_terminator = None
-            self.state = "steps"    # NEXT-STATE: Accept additional step(s).
+            self.state = "steps"  # NEXT-STATE: Accept additional step(s).
             return True
 
         # -- SPECIAL CASE: Strip trailing whitespace (whitespace normalization).
         # HINT: Required for Windows line-endings, like "\r\n", etc.
-        text_line = line[self.multiline_leading:].rstrip()
+        text_line = line[self.multiline_leading :].rstrip()
         self.lines.append(text_line)
 
         # -- BETTER DIAGNOSTICS: May remove non-whitespace in execute_steps()
-        removed_line_prefix = line[:self.multiline_leading]
+        removed_line_prefix = line[: self.multiline_leading]
         if removed_line_prefix.strip():
-            message = u"BAD-INDENT in multiline text: "
-            message += u"Line '%s' would strip leading '%s'" % \
-                        (line, removed_line_prefix)
+            message = "BAD-INDENT in multiline text: "
+            message += "Line '%s' would strip leading '%s'" % (
+                line,
+                removed_line_prefix,
+            )
             raise ParserError(message, self.line, self.filename)
         return True
 
@@ -695,20 +711,23 @@ class Parser(object):
 
         if not re.match(r"^(|.+)\|$", line):
             logger = logging.getLogger("behave")
-            logger.warning(u"Malformed table row at %s: line %i",
-                           self.feature.filename, self.line)
+            logger.warning(
+                "Malformed table row at %s: line %i", self.feature.filename, self.line
+            )
 
         # -- SUPPORT: Escaped-pipe(s) in Gherkin cell values.
         #    Search for pipe(s) that are not preceeded with an escape char.
-        cells = [cell.replace("\\|", "|").strip()
-                 for cell in re.split(r"(?<!\\)\|", line[1:-1])]
+        cells = [
+            cell.replace("\\|", "|").strip()
+            for cell in re.split(r"(?<!\\)\|", line[1:-1])
+        ]
         if self.table is None:
             # -- CASE: First row of the table
             self.table = model.Table(cells, self.line)
         else:
             # -- CASE: Following rows of the table
             if len(cells) != len(self.table.headings):
-                raise ParserError(u"Malformed table", self.line, self.filename)
+                raise ParserError("Malformed table", self.line, self.filename)
             self.table.add_row(cells, self.line)
         return True
 
@@ -732,7 +751,7 @@ class Parser(object):
             self.language = DEFAULT_LANGUAGE
         self.reset()
         self.filename = filename
-        self.rule = model.Rule(filename, 0, u"rule", u"")
+        self.rule = model.Rule(filename, 0, "rule", "")
         self.statement = self.rule
         self.state = "rule"
 
@@ -766,10 +785,10 @@ class Parser(object):
             if word.startswith("@"):
                 tags.append(model.Tag(word[1:], self.line))
             elif word.startswith("#"):
-                break   # -- COMMENT: Skip rest of line.
+                break  # -- COMMENT: Skip rest of line.
             else:
                 # -- BAD-TAG: Abort here.
-                message = u"tag: %s (line: %s)" % (word, line)
+                message = "tag: %s (line: %s)" % (word, line)
                 raise ParserError(message, self.line, self.filename)
         return tags
 
@@ -778,29 +797,34 @@ class Parser(object):
             for kw in self.keywords[step_type]:
                 # try to match the keyword; also attempt a purely lowercase
                 # match if that'll work
-                if not (line.startswith(kw) or
-                        line.lower().startswith(kw.lower())):
+                if not (line.startswith(kw) or line.lower().startswith(kw.lower())):
                     # -- CASE: Line does not start w/ a step-keyword.
                     continue
                 # -- HINT: Trailing SPACE is used for most keywords.
                 # BUT: Keywords in some languages (like Chinese, Japanese, ...)
                 #      do not need a whitespace as word separator.
-                step_text_after_keyword = line[len(kw):].strip()
+                step_text_after_keyword = line[len(kw) :].strip()
                 if kw.startswith("*") and self.last_step_type:
                     # -- CASE: Generic steps and Given/When/Then steps are mixed.
                     # HINT: Inherit step type from last step.
                     step_type = self.last_step_type
                 elif step_type in ("and", "but"):
-                    if not self.last_step_type:
-                        raise ParserError(u"No previous step",
-                                          self.line, self.filename)
-                    step_type = self.last_step_type
+                    pass
+                    # if not self.last_step_type:
+                    #     raise ParserError(u"No previous step",
+                    #                       self.line, self.filename)
+                    # step_type = self.last_step_type
                 else:
                     self.last_step_type = step_type
 
                 keyword = kw.rstrip()  # HINT: Strip optional trailing SPACE.
-                step = model.Step(self.filename, self.line,
-                                  keyword, step_type, step_text_after_keyword)
+                step = model.Step(
+                    self.filename,
+                    self.line,
+                    keyword,
+                    step_type,
+                    step_text_after_keyword,
+                )
                 return step
         return None
 
@@ -819,7 +843,7 @@ class Parser(object):
             self.language = DEFAULT_LANGUAGE
         self.reset()
         self.filename = filename
-        self.statement = model.Scenario(filename, 0, u"scenario", u"")
+        self.statement = model.Scenario(filename, 0, "scenario", "")
         self.state = "steps"
 
         for line in text.split("\n"):
