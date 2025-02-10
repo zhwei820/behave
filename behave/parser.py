@@ -809,11 +809,10 @@ class Parser(object):
                     # HINT: Inherit step type from last step.
                     step_type = self.last_step_type
                 elif step_type in ("and", "but"):
-                    pass
-                    # if not self.last_step_type:
-                    #     raise ParserError(u"No previous step",
-                    #                       self.line, self.filename)
-                    # step_type = self.last_step_type
+                    if not self.last_step_type:
+                        self.last_step_type = "when"
+                        # raise ParserError("No previous step", self.line, self.filename)
+                    step_type = self.last_step_type
                 else:
                     self.last_step_type = step_type
 
