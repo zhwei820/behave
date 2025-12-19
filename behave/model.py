@@ -1303,6 +1303,8 @@ class Scenario(TagAndStatusStatement, Replayable):
 
         if not failed and self.status == Status.passed:
             append_to_file(scenario_str)
+        else:
+            append_to_failed_file(scenario_str)
         return failed
 
 
@@ -2362,12 +2364,19 @@ def reset_model(model_elements):
 
 
 file_path = "scenario_pass"
+failed_file_path = "scenario_fail"
 
 
 def append_to_file(string_to_append):
     if check_string_in_file(string_to_append):
         return
     with open(file_path, "a+") as file:
+        file.write(string_to_append + "\n")
+
+def append_to_failed_file(string_to_append):
+    if check_string_in_file(string_to_append):
+        return
+    with open(failed_file_path, "a+") as file:
         file.write(string_to_append + "\n")
 
 
