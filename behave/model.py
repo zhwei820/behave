@@ -1180,7 +1180,7 @@ class Scenario(TagAndStatusStatement, Replayable):
         scenario_str = str(self)
         # print("====>scenario start", scenario_str)
 
-        if getattr(runner.config, "check_previous", False) and check_string_in_file(
+        if getattr(runner.config, "check_previous", False) and check_and_remove_string_in_file(
             scenario_str
         ):
             print("=====>scenario passed previously", scenario_str)
@@ -2368,25 +2368,44 @@ failed_file_path = "scenario_fail"
 
 
 def append_to_file(string_to_append):
-    if check_string_in_file(string_to_append):
+    if check_and_remove_string_in_file(file_path, string_to_append):
         return
     with open(file_path, "a+") as file:
         file.write(string_to_append + "\n")
 
+
 def append_to_failed_file(string_to_append):
-    if check_string_in_file(string_to_append):
+    if check_and_remove_string_in_file(failed_file_path, string_to_append):
         return
     with open(failed_file_path, "a+") as file:
         file.write(string_to_append + "\n")
 
 
-def check_string_in_file(target_string):
+def check_and_remove_string_in_file(file_path, target_string, is_remove=False):
+    """Check if target_string exists in file and optionally remove it.
+    
+    :param file_path: Path to the file to check/modify
+    :param target_string: String to search for in the file
+    :param is_remove: If True, remove lines containing target_string
+    :return: True if target_string was found, False otherwise
+    """
     try:
         with open(file_path, "r") as file:
-            for line in file:
-                # print("===>line", line)
-                if target_string in line:
-                    return True
+            lines = file.readlines()
+        
+        found = False
+        for line in lines:
+            if target_string in line:
+                found = True
+                break
+        
+        if found and is_remove:
+            # Remove lines containing the target_string
+            filtered_lines = [line for line in lines if target_string not in line]
+            with open(file_path, "w") as file:
+                file.writelines(filtered_lines)
+        
+        return found
     except Exception as e:
         pass
     return False
