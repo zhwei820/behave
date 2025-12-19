@@ -1180,9 +1180,9 @@ class Scenario(TagAndStatusStatement, Replayable):
         scenario_str = str(self)
         # print("====>scenario start", scenario_str)
 
-        if getattr(runner.config, "check_previous", False) and check_and_remove_string_in_file(
-            scenario_str
-        ):
+        if getattr(
+            runner.config, "check_previous", False
+        ) and check_and_remove_string_in_file(scenario_str):
             print("=====>scenario passed previously", scenario_str)
             self.set_status(Status.passed)
             return False  # not failed
@@ -2375,15 +2375,14 @@ def append_to_file(string_to_append):
 
 
 def append_to_failed_file(string_to_append):
-    if check_and_remove_string_in_file(failed_file_path, string_to_append):
-        return
+    check_and_remove_string_in_file(failed_file_path, string_to_append, is_remove=True)
     with open(failed_file_path, "a+") as file:
         file.write(string_to_append + "\n")
 
 
 def check_and_remove_string_in_file(file_path, target_string, is_remove=False):
     """Check if target_string exists in file and optionally remove it.
-    
+
     :param file_path: Path to the file to check/modify
     :param target_string: String to search for in the file
     :param is_remove: If True, remove lines containing target_string
@@ -2392,19 +2391,19 @@ def check_and_remove_string_in_file(file_path, target_string, is_remove=False):
     try:
         with open(file_path, "r") as file:
             lines = file.readlines()
-        
+
         found = False
         for line in lines:
             if target_string in line:
                 found = True
                 break
-        
+
         if found and is_remove:
             # Remove lines containing the target_string
             filtered_lines = [line for line in lines if target_string not in line]
             with open(file_path, "w") as file:
                 file.writelines(filtered_lines)
-        
+
         return found
     except Exception as e:
         pass
