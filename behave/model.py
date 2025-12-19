@@ -1182,7 +1182,7 @@ class Scenario(TagAndStatusStatement, Replayable):
 
         if getattr(
             runner.config, "check_previous", False
-        ) and check_and_remove_string_in_file(scenario_str):
+        ) and check_and_remove_string_in_file(file_path,scenario_str):
             print("=====>scenario passed previously", scenario_str)
             self.set_status(Status.passed)
             return False  # not failed
